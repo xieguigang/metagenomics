@@ -20,9 +20,16 @@ const runMothur as function(command, argv, log) {
     }
 }
 
+#' Create commandline arguments
+#' 
+#' @param argv a list object that contains commandline parameters for
+#'    run a specific mothur command. commandline argument which it has 
+#'    ``NULL`` value will be ignored in this function. 
+#'
 const mothurArgvs as function(argv) {
     argv 
     |> names()
+    |> which(key -> !is.null(argv[[key]]))
     |> sapply(key -> `${key}=${argv[[key]]}`)
     |> paste(collapse = ", ")
     ;
@@ -143,4 +150,17 @@ const count.seqs as function(names, groups) {
         log     = "[5]count.seqs.txt"
     );
     # contig.good.count_table
+}
+
+const align.seqs as function(contigs, silva, num_threads = 8) {
+    runMothur(
+        command = "align.seqs",
+        argv    = list(
+            fasta      = contigs,
+            reference  = silva,
+            flip       = "T",
+            processors = num_threads
+        ),
+        log     = "[7]align.seqs.txt"
+    );
 }
