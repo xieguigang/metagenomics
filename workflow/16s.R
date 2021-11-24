@@ -49,3 +49,9 @@ options(mothur = mothur);
 options(ncbi_blast = `${blast_bin}/blastn`);
 options(greengenes = greengenes);
 #end region
+
+Metagenomics::mothur_OTU(
+        left, right, 
+        outputdir   = "./", 
+        num_threads = 32
+);

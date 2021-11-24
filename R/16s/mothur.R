@@ -76,6 +76,8 @@ const write_contig as function(seqfile) {
     print(`${seqfile} => ${contig.fasta}...`);
     file.rename(seqfile, contig.fasta);
     cat("done~!\n");
+
+    contig.fasta;
 } 
 
 const summary.seqs as function(seqfile, count_table, 
@@ -90,7 +92,7 @@ const summary.seqs as function(seqfile, count_table,
 }
 
 #' RunAutoScreen
-const readSummary as function(contigs, num_threads = 8) {
+const screen.seqs as function(contigs, num_threads = 8) {
     using workdir as workdir(dirname(file)) {
         const file as string = "[2]summary.seqs.txt";
         const summary = list(min = 0, max = 0);
