@@ -111,3 +111,15 @@ const readSummary as function(contigs, num_threads = 8) {
         # 16s.contigs.good.groups
     }
 }
+
+const unique.seqs as function(contigs) {
+    using workdir as workdir(dirname(contigs)) {
+        runMothur(
+            command = "unique.seqs",
+            argv    = list(fasta=$contigs), 
+            log     = "[4]unique.seqs.txt"
+        );
+        # contig.good.names
+        # contig.good.unique.fasta
+    }
+}
