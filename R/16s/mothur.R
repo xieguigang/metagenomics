@@ -135,7 +135,7 @@ const unique.seqs as function(contigs) {
     using workdir as workdir(dirname(contigs)) {
         runMothur(
             command = "unique.seqs",
-            argv    = list(fasta=$contigs), 
+            argv    = list(fasta=contigs), 
             log     = "[4]unique.seqs.txt"
         );
         # contig.good.names
@@ -162,5 +162,55 @@ const align.seqs as function(contigs, silva, num_threads = 8) {
             processors = num_threads
         ),
         log     = "[7]align.seqs.txt"
+    );
+}
+
+const filter.seqs as function() {
+    runMothur(
+        command = "filter.seqs",
+        argv    = list(
+            fasta= align,
+            processors= num_threads
+        ),
+        log   = "[8]filter.seqs.txt"
+    );
+}
+
+const dist.seqs as function() {
+    runMothur(
+        command = "dist.seqs",
+        argv    = list(
+            fasta=$align,
+            calc=onegap,
+            countends=F,
+            cutoff=0.03,
+            output=lt,
+            processors=$num_threads
+        ),
+        log  = "[10]dist.seqs.txt"
+    );
+}
+
+const cluster as function() {
+    runMothur(
+        command = "dist.seqs",
+        argv    = list(phylip=$dist,method=furthest,cutoff=0.03,processors=$num_threads),
+        log     = "[11]cluster.txt"
+    );
+}
+
+const bin.seqs as function() {
+    runMothur(
+        command = "bin.seqs",
+        argv    = list(list=$list,fasta=$contigs,name=contig.names),
+        log     = "[12]bin.seqs.txt"
+    );
+}
+
+const get.oturep as function() {
+    runMothur(
+        command = "get.oturep",
+        argv    = list(phylip=$dist,fasta=contig.unique.fasta,list=$list,label=0.03),
+        log     = "[13]get.oturep.txt"
     );
 }
