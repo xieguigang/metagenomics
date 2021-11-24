@@ -36,8 +36,16 @@ const mothur as string = ?"--mothur" || "/opt/metagenomics/mothur/mothur";
         database."]
 const blast_bin as string = ?"--blast+" || "/opt/metagenomics/ncbi-blast-2.12.0+/bin";
 
+[@info "the reference OTU sequnece database for run taxonomy 
+        annotation of the OTU contigs which is generated from 
+        the mothur software. this database file can be download
+        from the mothur release page: 
+        https://mothur.org/wiki/greengenes-formatted_databases/"]
+const greengenes as string = ?"--greengenes" || "/opt/metagenomics/greengenes/taxonomy/gg_13_8_99.fasta+gg_13_8_99.gg.tax";
+
 #region "config workspace"
 options(workflow.debug = workflow_debug);
 options(mothur = mothur);
 options(ncbi_blast = `${blast_bin}/blastn`);
+options(greengenes = greengenes);
 #end region
