@@ -1,7 +1,12 @@
 require(Metagenomics);
 
+#' title: OTU analysis based on mothur
+#' author: xieguigang <xie.guigang@gcmodeller.org> 
 #'
-#' 
+#' description: this script apply for generate OTU contigs data from
+#'    paired-end short reads files, which could be assembled via mothur
+#'    program and run alignment with greengenes database or silva 
+#'    database.
 
 [@info "the left paired-end short reads file."]
 [@type "*.fq"]
