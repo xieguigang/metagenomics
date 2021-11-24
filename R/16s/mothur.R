@@ -71,17 +71,29 @@ const write_contig as function(seqfile) {
     cat("done~!\n");
 } 
 
+const summary.seqs as function(seqfile, count_table, 
+    num_threads = 8, 
+    logfile     = "log.txt") {
+
+    runMothur(
+        command = "summary.seqs",
+        argv    = list(fasta=contigs,processors=num_threads), 
+        log     = logfile
+    );
+}
+
+#' RunAutoScreen
 const readSummary as function(contigs, num_threads = 8) {
     using workdir as workdir(dirname(file)) {
         const file as string = "[2]summary.seqs.txt";
         const summary = list(min = 0, max = 0);
         const groups  = "16s.contigs.groups";
 
-        # RunAutoScreen
-        runMothur(
-            command = "summary.seqs",
-            argv    = list(fasta=contigs,processors=num_threads), 
-            log     = file
+        summary.seqs(
+            seqfile     = contigs, 
+            count_table = NULL, 
+            num_threads = num_threads,
+            logfile     = file
         );
 
         for(line in readLines(file)) {
@@ -122,4 +134,13 @@ const unique.seqs as function(contigs) {
         # contig.good.names
         # contig.good.unique.fasta
     }
+}
+
+const count.seqs as function(names, groups) {
+    runMothur(
+        command = "count.seqs",
+        argv    = list(name=names, group=groups), 
+        log     = "[5]count.seqs.txt"
+    );
+    # contig.good.count_table
 }
