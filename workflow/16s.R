@@ -25,3 +25,19 @@ const outputdir as string = ?"--outputdir" || `${dirname(left)}/16s_result/`;
         threads."]
 const num_threads as integer = ?"--num_threads" || 32;
 
+[@info "run debug of the workflow?"]
+const workflow_debug as boolean = ?"--workflow-debug";
+
+[@info "file path to the mothur program executable file."]
+const mothur as string = ?"--mothur" || "/opt/metagenomics/mothur/mothur";
+
+[@info "the folder path of the NCBI blast+ suite for run 
+        OTU contig alignment with the greengenes or silva 
+        database."]
+const blast_bin as string = ?"--blast+" || "/opt/metagenomics/ncbi-blast-2.12.0+/bin";
+
+#region "config workspace"
+options(workflow.debug = workflow_debug);
+options(mothur = mothur);
+options(ncbi_blast = `${blast_bin}/blastn`);
+#end region
