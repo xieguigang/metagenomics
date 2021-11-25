@@ -185,41 +185,41 @@ const filter.seqs as function() {
     );
 }
 
-const dist.seqs as function() {
+const dist.seqs as function(align_fasta,calc="onegap", countends="F",cutoff=0.03,output="lt",num_threads=32, logfile ="[10]dist.seqs.txt" ) {
     runMothur(
         command = "dist.seqs",
         argv    = list(
-            fasta=$align,
-            calc=onegap,
-            countends=F,
-            cutoff=0.03,
-            output=lt,
-            processors=$num_threads
+            fasta=align_fasta,
+            calc=calc,
+            countends=countends,
+            cutoff=cutoff,
+            output=output,
+            processors=num_threads
         ),
-        log  = "[10]dist.seqs.txt"
+        log  = logfile
     );
 }
 
-const cluster as function() {
+const cluster as function(dist,method=furthest,cutoff=0.03 ,num_threads = 32, logfile =  "[11]cluster.txt") {
     runMothur(
         command = "dist.seqs",
-        argv    = list(phylip=$dist,method=furthest,cutoff=0.03,processors=$num_threads),
-        log     = "[11]cluster.txt"
+        argv    = list(phylip=dist,method=method,cutoff=cutoff,processors=num_threads),
+        log     = logfile
     );
 }
 
-const bin.seqs as function() {
+const bin.seqs as function(list, contigs, contig.names) {
     runMothur(
         command = "bin.seqs",
-        argv    = list(list=$list,fasta=$contigs,name=contig.names),
+        argv    = list(list=list,fasta=contigs,name=contig.names),
         log     = "[12]bin.seqs.txt"
     );
 }
 
-const get.oturep as function() {
+const get.oturep as function(dist,contig.unique.fasta, list,label=0.03 ) {
     runMothur(
         command = "get.oturep",
-        argv    = list(phylip=$dist,fasta=contig.unique.fasta,list=$list,label=0.03),
+        argv    = list(phylip=dist,fasta=contig.unique.fasta,list=list,label=label),
         log     = "[13]get.oturep.txt"
     );
 }
