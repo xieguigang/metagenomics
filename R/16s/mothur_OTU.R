@@ -42,58 +42,41 @@ const mothur_OTU as function(left, right,
     work16s$contigs = "contig.fasta";
 
     
-    align.seqs(fasta=$contigs,reference=$silva,flip=T,processors=$num_threads)","[7]align.seqs.txt");
+    align.seqs(fasta=work16s$contigs,reference=work16s$silva,flip=T,processors=work16s$num_threads, logfile = "[7]align.seqs.txt");
     # contig.align
     # contig.align.report
     # contig.flip.accnos
 
     $align = "contig.align";
-    filter.seqs(fasta=$align,processors=$num_threads)", "[8]filter.seqs.txt");
+    filter.seqs(fasta=work16s$align,processors=work16s$num_threads, logfile = "[8]filter.seqs.txt");
     # contig.filter
     # contig.filter.fasta
 
     write_contig("contig.filter.fasta");
-    unique.seqs(fasta=$contigs)", "[9]unique.seqs.txt");
+    unique.seqs(fasta=work16s$contigs, logfile = "[9]unique.seqs.txt");
     # contig.names
     # contig.unique.fasta
-
     
-$align = "contig.unique.fasta";
-runMothur("dist.seqs(fasta=$align,calc=onegap,countends=F,cutoff=0.03,output=lt,processors=$num_threads)", "[10]dist.seqs.txt");
-# contig.unique.phylip.dist
+    work16s$align = "contig.unique.fasta";
+    dist.seqs(fasta=work16s$align,calc=onegap,countends=F,cutoff=0.03,output=lt,processors=work16s$num_threads, logfile = "[10]dist.seqs.txt");
+    # contig.unique.phylip.dist
 
-my $dist = "contig.unique.phylip.dist";
-runMothur("cluster(phylip=$dist,method=furthest,cutoff=0.03,processors=$num_threads)", "[11]cluster.txt");
+    work16s$dist = "contig.unique.phylip.dist";
+    cluster(phylip=work16s$dist,method=furthest,cutoff=0.03,processors=work16s$num_threads, logfile = "[11]cluster.txt");
 
-# contig.unique.phylip.fn.sabund
-# contig.unique.phylip.fn.rabund
-# contig.unique.phylip.fn.list
+    # contig.unique.phylip.fn.sabund
+    # contig.unique.phylip.fn.rabund
+    # contig.unique.phylip.fn.list
 
-my $list = "contig.unique.phylip.fn.list";
-runMothur("bin.seqs(list=$list,fasta=$contigs,name=contig.names)", "[12]bin.seqs.txt");
+    work16s$list = "contig.unique.phylip.fn.list";
+    bin.seqs(list=work16s$list,fasta=work16s$contigs,name=contig.names, logfile = "[12]bin.seqs.txt");
 
-# contig.unique.phylip.fn.unique.fasta
-# contig.unique.phylip.fn.0.01.fasta
-# contig.unique.phylip.fn.0.02.fasta
-# contig.unique.phylip.fn.0.03.fasta
-runMothur("get.oturep(phylip=$dist,fasta=contig.unique.fasta,list=$list,label=0.03)", "[13]get.oturep.txt");
+    # contig.unique.phylip.fn.unique.fasta
+    # contig.unique.phylip.fn.0.01.fasta
+    # contig.unique.phylip.fn.0.02.fasta
+    # contig.unique.phylip.fn.0.03.fasta
+    get.oturep(phylip=work16s$dist,fasta=contig.unique.fasta,list=work16s$list,label=0.03, logfile = "[13]get.oturep.txt");
 
-print "Mothur job done!\n";
-
-# 在这里进行SILVA的16S数据库的比对操作，进行OTU序列所属的物种鉴定
-# 首先需要将OTU的fasta文件之中由于前面的mothur程序align的空格和连接符都删除掉
-# 否则blastn程序会报错
-my $fasta   = "./contig.unique.phylip.fn.0.03.rep.fasta";
-my $data    = read_file $fasta, {binmode => ':utf8'};
-my $OTU_rep = "./OTU.rep.fasta"; 
-
-$data =~ s/[.-]//g;
-write_file $OTU_rep, {binmode => ':utf8'}, $data;
-
-# 进行blastn序列比对操作来完成物种鉴定
-$CLI = "$blastn -query $OTU_rep -db $greengene -out ./OTU_greengene_99.txt -evalue 1e-50 -num_threads $num_threads";
-print $CLI."\n";
-system($CLI);
-
-print("greengenes OTU Taxonomy align job done!");
+    print("Mothur job done!");
 }
+
