@@ -6,7 +6,7 @@
 const runMothur as function(command, argv, log) {
     const mothur as string      = getOption("mothur");
     const is_debug as boolean   = getOption("workflow.debug");
-    const commandArgs as string = `${mothur} "#${command}(${mothurArgvs(argv)})"`;
+    const commandArgs as string = `${mothur} "#${command}(${mothurArgvs(command, argv)})"`;
 
     print(commandArgs);
 
@@ -27,6 +27,12 @@ const runMothur as function(command, argv, log) {
 #'    ``NULL`` value will be ignored in this function. 
 #'
 const mothurArgvs as function(argv) {
+    for(name in names(argv)) {
+        if (is.null(argv[[key]])) {
+            warning(`missing value of '${name}' in '${command}'?`);
+        }
+    }
+
     argv 
     |> names()
     |> which(key -> !is.null(argv[[key]]))
