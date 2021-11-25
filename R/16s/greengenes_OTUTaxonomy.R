@@ -16,7 +16,7 @@ const greengenes_OTUTaxonomy as function(left, right,
 
     work16s$fasta
     |> readLines()
-    |> writeLines(con = $OTU_rep)
+    |> writeLines(con = work16s$OTU_rep)
     ;
 
     # 进行blastn序列比对操作来完成物种鉴定

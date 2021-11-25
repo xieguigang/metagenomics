@@ -47,7 +47,7 @@ const mothur_OTU as function(left, right,
     # contig.align.report
     # contig.flip.accnos
 
-    $align = "contig.align";
+    work16s$align = "contig.align";
     filter.seqs(fasta=work16s$align,processors=work16s$num_threads, logfile = "[8]filter.seqs.txt");
     # contig.filter
     # contig.filter.fasta
