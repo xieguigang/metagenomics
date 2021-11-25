@@ -2,7 +2,9 @@ const greengenes_OTUTaxonomy as function(left, right,
                                          outputdir   = "./", 
                                          num_threads = 32) {
 
-    const is_debug as boolean   = getOption("workflow.debug");
+    const is_debug as boolean  = getOption("workflow.debug");
+    const blastn as string     = getOption("ncbi_blast");
+    const greengenes as string = greengenes_opts();
 
     mothur_OTU(left, right, outputdir, num_threads); 
 
@@ -18,7 +20,14 @@ const greengenes_OTUTaxonomy as function(left, right,
     ;
 
     # 进行blastn序列比对操作来完成物种鉴定
-    const blastn_cli as string = `$blastn -query $OTU_rep -db $greengene -out ./OTU_greengene_99.txt -evalue 1e-50 -num_threads $num_threads`;
+    const blastn_cli as string = `
+        ${blastn} 
+            -query  ${work16s$OTU_rep} 
+            -db     ${greengene$fasta} 
+            -out    "./OTU_greengene_99.txt" 
+            -evalue 1e-50 
+            -num_threads ${num_threads}
+    `;
     
     print(blastn_cli);    
 
@@ -27,4 +36,23 @@ const greengenes_OTUTaxonomy as function(left, right,
     }
 
     print("greengenes OTU Taxonomy align job done!");
+}
+
+#' parse greengenes option value
+#' 
+#' @return a list object that contains two elements:
+#'    1. fasta: is the file path of the fasta sequence file
+#'    2. taxonomy: is the file path of the taxonomy data for 
+#'                 the data annotation of the OTU sequence
+#' 
+const greengenes_opts as function() {
+    const greengenes as string = getOption("greengenes");
+    const name as string       = basename(greengenes);
+    const parts as string      = strsplit(name, "+", fixed = TRUE);
+    const repository as string = dirname(greengenes);
+
+    list(
+        fasta    = `${repository}/${parts[1]}`,
+        taxonomy = `${repository}/${parts[2]}`
+    );
 }
