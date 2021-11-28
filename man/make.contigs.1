@@ -1,4 +1,4 @@
-﻿.TH MAKE.CONTIGS 1 2021-11-25 "" "@details The 3 column format is used for datasets where the sequences have already had the barcodes and primers removed and been split into separate files. The first column is the group, the second is the forward fastq and the third column contains the reverse fastq."
+﻿.TH MAKE.CONTIGS 1 2021-11-28 "" "The ``make.contigs`` command reads a forward fastq file and a reverse fastq file and outputs new fasta and report files."
 .SH NAME
 make.contigs \- make.contigs(left, right, outputdir, num_threads = 8)
 .SH SYNOPSIS
@@ -16,9 +16,13 @@ make.contigs \- make.contigs(left, right, outputdir, num_threads = 8)
 .PP
 \fBnum_threads\fB \fR\- 8. 
 .PP
+.SH DETAILS
+.PP
+The make.contigs command parameters are file, ffastq, rfastq, ffasta, rfasta, fqfile, rqfile, findex, rindex, oligos, format, tdiffs, bdiffs, pdiffs, align, match, mismatch, gapopen, gapextend, insert, deltaq, maxee, allfiles and processors. Here we create a combo file for given input data to mothur: the 3 column format is used for datasets where the sequences have already had the barcodes and primers removed and been split into separate files. The first column is the group, the second is the forward fastq and the third column contains the reverse fastq.
+.PP
 .SH FILES
 .PP
-SMRUCC/R#.declare_function.make.contigs at mothur.R:line 49
+SMRUCC/R#.declare_function.make.contigs at mothur.R:line 64
 .PP
 .SH COPYRIGHT
 Copyright © xieguigang <xie.guigang@gcmodeller.org>, MIT Licensed 2021

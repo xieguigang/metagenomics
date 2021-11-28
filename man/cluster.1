@@ -1,8 +1,12 @@
-﻿.TH CLUSTER 1 2021-11-25 "" "cluster"
+﻿.TH CLUSTER 1 2021-11-28 "" "assign sequences to OTUs"
 .SH NAME
 cluster \- cluster(dist, method = furthest, cutoff = 0.03, num_threads = 32, logfile = [11]cluster.txt)
 .SH SYNOPSIS
 \fIcluster(dist, method = furthest, cutoff = 0.03, num_threads = 32, logfile = [11]cluster.txt)\fR
+.SH DESCRIPTION
+.PP
+Once a distance matrix gets read into mothur, the cluster command can be used to assign sequences to OTUs. Presently, mothur implements three clustering methods: + OptiClust (opti): OTUs are assembled using metrics to determine the quality of clustering (the default setting). + Nearest neighbor (nearest): Each of the sequences within an OTU are at most X% distant from the most similar sequence in the OTU. + Furthest neighbor (furthest): All of the sequences within an OTU are at most X% distant from all of the other sequences within the OTU. + Average neighbor (average): This method is a middle ground between the other two algorithms. + AGC (agc): Abundance-based greedy clustering. + DGC (dgc): Distance-based greedy clustering. + Unique (unique): Creates a list file from a name or count file where every unique sequence is assigned to it’s own OTU (i.e. Amplicon Sequence Variant) If there is an algorithm that you would like to see implemented, please consider either contributing to the mothur project or contacting the developers and we’ll see what we can do. The opticlust algorithm is the default option.
+.PP
 .SH OPTIONS
 .PP
 \fBdist\fB \fR\- . 
@@ -21,7 +25,7 @@ cluster \- cluster(dist, method = furthest, cutoff = 0.03, num_threads = 32, log
 .PP
 .SH FILES
 .PP
-SMRUCC/R#.declare_function.cluster at mothur.R:line 203
+SMRUCC/R#.declare_function.cluster at mothur.R:line 303
 .PP
 .SH COPYRIGHT
 Copyright © xieguigang <xie.guigang@gcmodeller.org>, MIT Licensed 2021
