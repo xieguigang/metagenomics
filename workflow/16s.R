@@ -14,7 +14,7 @@ const left as string = ?"--left" || stop("At least one paired-end short reads fi
 
 [@info "the right paired-end short reads file."]
 [@type "*.fq"]
-const right as string = ?"--right";
+const right as string = ?"--right" || stop("Missing of the right pair-end short reads file!");
 
 [@info "the directory folder path for output data result files."]
 [@type "directory"]

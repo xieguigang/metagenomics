@@ -33,7 +33,7 @@ const runMothur as function(command, argv, log) {
 #'
 const mothurArgvs as function(argv) {
     for(name in names(argv)) {
-        if (is.null(argv[[key]])) {
+        if (is.null(argv[[name]])) {
             warning(`missing value of '${name}' in '${command}'?`);
         }
     }

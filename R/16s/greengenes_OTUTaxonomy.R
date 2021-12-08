@@ -1,3 +1,14 @@
+
+#' Workflow for 16s
+#' 
+#' @description Workflow for create 16s data analysis based on the mothur
+#'    software and NCBI blastn program. Workflow steps in this function 
+#'    includes:
+#'  
+#'    1. create OTU sequence based on the mothur workflow
+#'    2. alignment of the OTU sequence with the greengenes database
+#'       via NCBI blastn pipeline
+#'
 const greengenes_OTUTaxonomy as function(left, right, 
                                          outputdir   = "./", 
                                          num_threads = 32) {

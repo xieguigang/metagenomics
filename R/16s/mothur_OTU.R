@@ -1,6 +1,12 @@
 
 #' Build OTU based on mothur
 #' 
+#' @param left the left paired-end sequence file.
+#' @param right the right paired-end sequence file.
+#' @param outputdir the result output dir for save temp file
+#' @param num_threads the number of the processor threads that 
+#'    will be used in the mothur software.
+#' 
 const mothur_OTU as function(left, right, 
                              outputdir   = "./", 
                              num_threads = 32) {
