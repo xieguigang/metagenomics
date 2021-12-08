@@ -24,22 +24,21 @@ const mothur_OTU as function(left, right,
     # RunAutoScreen
     # summary.seqs + screen.seqs 
     # 
-    screen.seqs(work16s$contig.fasta, num_threads = num_threads);
-
+    work16s$contig.fasta |> screen.seqs(num_threads = num_threads);
     work16s$contigs = "contig.good.fasta";
     work16s$groups  = "16s.contigs.good.groups";
 
     unique.seqs(work16s$contigs, logfile = "[4]unique.seqs.txt");
 
     work16s$names = "contig.good.names"; 
-    count.seqs(work16s$names, groups= work16s$groups);
+    work16s$names |> count.seqs(groups= work16s$groups);
 
     work16s$count_table = "contig.good.count_table";
     summary.seqs(
-        seqfile="contig.good.unique.fasta", 
-        count_table=work16s$count_table,
+        seqfile     = "contig.good.unique.fasta", 
+        count_table = work16s$count_table,
         num_threads = num_threads, 
-        logfile = "[6]summary.seqs.txt"
+        logfile     = "[6]summary.seqs.txt"
     );
     # contig.good.unique.summary
 
