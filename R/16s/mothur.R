@@ -42,7 +42,7 @@ const mothurArgvs as function(argv) {
     |> names()
     |> which(key -> !is.null(argv[[key]]))
     |> sapply(key -> `${key}=${argv[[key]]}`)
-    |> paste(collapse = ", ")
+    |> paste(deli = ", ")
     ;
 }
 
