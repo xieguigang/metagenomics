@@ -127,7 +127,7 @@ const summary.seqs as function(seqfile, count_table,
 #' contigsreport, alignreport and summary file.
 #' 
 const screen.seqs as function(contigs, num_threads = 8) {
-    using workdir as workdir(dirname(file)) {
+    using workdir as workdir(dirname(contigs)) {
         const file as string = "[2]summary.seqs.txt";
         const summary = list(min = 0, max = 0);
         const groups  = "16s.contigs.groups";
@@ -140,8 +140,8 @@ const screen.seqs as function(contigs, num_threads = 8) {
         );
 
         for(line in readLines(file)) {
-            const cols   = unlist(strsplit(line, "\t", fixed = FALSE));
-            const header = cols[1];
+            const cols as string = unlist(strsplit(line, "\t", fixed = FALSE));
+            const header as string = cols[1];
 
             if (header == "2.5%-tile:") {
                 summary$min = cols[4];
@@ -149,6 +149,10 @@ const screen.seqs as function(contigs, num_threads = 8) {
                 summary$max = cols[4];
             }
         }
+
+        print(readLines(file));
+        print("Parsed result:");
+        str(summary);
 
         runMothur(
             command = "screen.seqs",
