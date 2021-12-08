@@ -1,8 +1,12 @@
-﻿.TH GREENGENES_OTUTAXONOMY 1 2021-12-08 "" "greengenes_OTUTaxonomy"
+﻿.TH GREENGENES_OTUTAXONOMY 1 2021-12-08 "" "Workflow for 16s"
 .SH NAME
 greengenes_OTUTaxonomy \- greengenes_OTUTaxonomy(left, right, outputdir = ./, num_threads = 32)
 .SH SYNOPSIS
 \fIgreengenes_OTUTaxonomy(left, right, outputdir = ./, num_threads = 32)\fR
+.SH DESCRIPTION
+.PP
+Workflow for create 16s data analysis based on the mothur software and NCBI blastn program. Workflow steps in this function includes: 1. create OTU sequence based on the mothur workflow 2. alignment of the OTU sequence with the greengenes database via NCBI blastn pipeline
+.PP
 .SH OPTIONS
 .PP
 \fBleft\fB \fR\- . 
@@ -18,7 +22,7 @@ greengenes_OTUTaxonomy \- greengenes_OTUTaxonomy(left, right, outputdir = ./, nu
 .PP
 .SH FILES
 .PP
-SMRUCC/R#.declare_function.greengenes_OTUTaxonomy at greengenes_OTUTaxonomy.R:line 1
+SMRUCC/R#.declare_function.greengenes_OTUTaxonomy at greengenes_OTUTaxonomy.R:line 12
 .PP
 .SH COPYRIGHT
 Copyright © xieguigang <xie.guigang@gcmodeller.org>, MIT Licensed 2021
