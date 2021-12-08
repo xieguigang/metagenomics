@@ -308,7 +308,7 @@ const dist.seqs as function(align_fasta,calc="onegap", countends="F",cutoff=0.03
 #' contributing to the mothur project or contacting the developers and we’ll see what we 
 #' can do. The opticlust algorithm is the default option.
 #' 
-const cluster as function(dist,method=furthest,cutoff=0.03 ,num_threads = 32, logfile =  "[11]cluster.txt") {
+const cluster as function(dist,method="furthest",cutoff=0.03 ,num_threads = 32, logfile =  "[11]cluster.txt") {
     runMothur(
         command = "dist.seqs",
         argv    = list(phylip=dist,method=method,cutoff=cutoff,processors=num_threads),

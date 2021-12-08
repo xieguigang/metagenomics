@@ -48,7 +48,7 @@ const mothur_OTU as function(left, right,
     work16s$contigs = "contig.fasta";
 
     
-    align.seqs(fasta=work16s$contigs,reference=work16s$silva,flip=T,processors=work16s$num_threads, logfile = "[7]align.seqs.txt");
+    align.seqs(fasta=work16s$contigs,reference=work16s$silva,flip="T",processors=work16s$num_threads, logfile = "[7]align.seqs.txt");
     # contig.align
     # contig.align.report
     # contig.flip.accnos
@@ -64,24 +64,24 @@ const mothur_OTU as function(left, right,
     # contig.unique.fasta
     
     work16s$align = "contig.unique.fasta";
-    dist.seqs(fasta=work16s$align,calc=onegap,countends=F,cutoff=0.03,output=lt,processors=work16s$num_threads, logfile = "[10]dist.seqs.txt");
+    dist.seqs(fasta=work16s$align,calc="onegap",countends="F",cutoff=0.03,output="lt",processors=work16s$num_threads, logfile = "[10]dist.seqs.txt");
     # contig.unique.phylip.dist
 
     work16s$dist = "contig.unique.phylip.dist";
-    cluster(phylip=work16s$dist,method=furthest,cutoff=0.03,processors=work16s$num_threads, logfile = "[11]cluster.txt");
+    cluster(phylip=work16s$dist,method="furthest",cutoff=0.03,processors=work16s$num_threads, logfile = "[11]cluster.txt");
 
     # contig.unique.phylip.fn.sabund
     # contig.unique.phylip.fn.rabund
     # contig.unique.phylip.fn.list
 
     work16s$list = "contig.unique.phylip.fn.list";
-    bin.seqs(list=work16s$list,fasta=work16s$contigs,name=contig.names, logfile = "[12]bin.seqs.txt");
+    bin.seqs(list=work16s$list,fasta=work16s$contigs,name="contig.names", logfile = "[12]bin.seqs.txt");
 
     # contig.unique.phylip.fn.unique.fasta
     # contig.unique.phylip.fn.0.01.fasta
     # contig.unique.phylip.fn.0.02.fasta
     # contig.unique.phylip.fn.0.03.fasta
-    get.oturep(phylip=work16s$dist,fasta=contig.unique.fasta,list=work16s$list,label=0.03, logfile = "[13]get.oturep.txt");
+    get.oturep(phylip=work16s$dist,fasta="contig.unique.fasta",list=work16s$list,label=0.03, logfile = "[13]get.oturep.txt");
 
     print("Mothur job done!");
 }
