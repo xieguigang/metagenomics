@@ -139,7 +139,12 @@ const screen.seqs as function(contigs, num_threads = 8) {
             logfile     = file
         );
 
-        for(line in readLines(file)) {
+        print("sequence summary result:");
+        print(readLines(file));
+
+        # filter out all empty string line:
+        # argument is of length zero
+        for(line in readLines(file) |> which(l -> l != "")) {
             const cols as string = unlist(strsplit(line, "\t", fixed = FALSE));
             const header as string = cols[1];
 
@@ -149,8 +154,7 @@ const screen.seqs as function(contigs, num_threads = 8) {
                 summary$max = cols[4];
             }
         }
-
-        print(readLines(file));
+        
         print("Parsed result:");
         str(summary);
 
