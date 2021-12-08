@@ -227,16 +227,19 @@ const count.seqs as function(names, groups) {
 #' template database is based on the secondary structure, then the resulting 
 #' alignment will at least be implicitly based on the secondary structure.
 #' 
-const align.seqs as function(contigs, silva, num_threads = 8) {
+const align.seqs as function(contigs, silva, 
+                             flip        = "F", 
+                             num_threads = 8, 
+                             logfile     = "[7]align.seqs.txt") {
     runMothur(
         command = "align.seqs",
         argv    = list(
             fasta      = contigs,
             reference  = silva,
-            flip       = "T",
+            flip       = flip,
             processors = num_threads
         ),
-        log     = "[7]align.seqs.txt"
+        log = logfile
     );
 }
 
@@ -250,14 +253,14 @@ const align.seqs as function(contigs, silva, num_threads = 8) {
 #' This type of masking is only encouraged for deep-level phylogenetic analysis, not 
 #' fine level analysis such as that needed with calculating OTUs.
 #' 
-const filter.seqs as function() {
+const filter.seqs as function(align, num_threads, logfile = "[8]filter.seqs.txt") {
     runMothur(
         command = "filter.seqs",
         argv    = list(
-            fasta= align,
-            processors= num_threads
+            fasta      = align,
+            processors = num_threads
         ),
-        log   = "[8]filter.seqs.txt"
+        log   = logfile
     );
 }
 

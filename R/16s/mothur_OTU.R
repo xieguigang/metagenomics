@@ -45,15 +45,21 @@ const mothur_OTU as function(left, right,
     write_contig("contig.good.unique.fasta");
 
     work16s$contigs = "contig.fasta";
-
-    
-    align.seqs(fasta=work16s$contigs,reference=work16s$silva,flip="T",processors=work16s$num_threads, logfile = "[7]align.seqs.txt");
+    work16s$contigs |> align.seqs(        
+        silva      = work16s$silva,
+        flip       = "T",
+        processors = work16s$num_threads, 
+        logfile    = "[7]align.seqs.txt"
+    );
     # contig.align
     # contig.align.report
     # contig.flip.accnos
 
     work16s$align = "contig.align";
-    filter.seqs(fasta=work16s$align,processors=work16s$num_threads, logfile = "[8]filter.seqs.txt");
+    work16s$align |> filter.seqs(       
+        num_threads = work16s$num_threads, 
+        logfile     = "[8]filter.seqs.txt"
+    );
     # contig.filter
     # contig.filter.fasta
 
