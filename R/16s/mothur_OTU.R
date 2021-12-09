@@ -37,6 +37,16 @@ const mothur_OTU as function(left, right, refalign,
 #'    ``outputdir``.
 #' 
 const mothur_workflow as function(work16s) {
+    print("View of the mothur workflow parameters:");
+    str(work16s);
+
+    print("current workspace for run mothur:");
+    print(getwd());
+
+    cat("\n\n");
+    cat("-------------------------========================================================-------------\n");
+    cat("Schloss, P.D., et al., Introducing mothur: Open-source, platform-independent, community-supported software for describing and comparing microbial communities. Appl Environ Microbiol, 2009. 75(23):7537-41.\n\n");
+
     make.contigs(work16s$left, work16s$right, num_threads = work16s$num_threads);
     work16s$contig.fasta = write_contig("16s.trim.contigs.fasta");
 
