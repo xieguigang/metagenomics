@@ -13,7 +13,7 @@ const runMothur as function(command, argv, log) {
     const is_debug as boolean   = getOption("workflow.debug");
     const commandArgs as string = `${mothur} "#${command}(${command |> mothurArgvs(argv)})"`;
 
-    print(commandArgs);
+    cat(`${log} ${commandArgs}\n`);
 
     if (!is_debug) {
         commandArgs
