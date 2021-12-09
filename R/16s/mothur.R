@@ -20,6 +20,14 @@ const runMothur as function(command, argv, log) {
         |> system(intern = TRUE)
         |> writeLines(con = log)
         ;
+
+        stdout = readLines(log);
+
+        if (any(stdout like $".*\[ERROR\].*")) {
+            stop(readText(log));
+        } else {
+            0;
+        }
     } else {
         0;
     }
