@@ -42,6 +42,7 @@ const greengenes_OTUTaxonomy as function(left, right,
     # contig.unique.phylip.fn.unique.rep.fasta
     work16s$fasta   = `${outputdir}/contig.unique.phylip.fn.unique.rep.fasta`;
     work16s$OTU_rep = `${outputdir}/OTU.rep.fasta`; 
+    work16s$blastnOut = `${outputdir}/OTU_greengene_99.txt`;
 
     work16s$fasta
     |> readLines()
@@ -54,7 +55,7 @@ const greengenes_OTUTaxonomy as function(left, right,
         ${blastn} 
             -query  "${work16s$OTU_rep}" 
             -db     "${greengenes[[1]]}" 
-            -out    "${outputdir}/OTU_greengene_99.txt" 
+            -out    "${work16s$blastnOut}" 
             -evalue "${evalue}"
             -num_threads ${num_threads}
     `;
@@ -64,6 +65,11 @@ const greengenes_OTUTaxonomy as function(left, right,
 
     if (!is_debug) {
         blastn_cli |> system(intern = TRUE);    
+    }
+
+    if (file.exists(work16s$blastnOut)) {
+        # run blastn parser
+        
     }
 
     print("greengenes OTU Taxonomy align job done!");
