@@ -20,10 +20,12 @@ const mothur_OTU as function(left, right, refalign,
     );
 
     using workdir as workdir(outputdir) {
-        work16s |> mothur_workflow();
+        work16s = work16s |> mothur_workflow();
     }
 
     print("Mothur job done!");
+
+    return(work16s);
 }
 
 #' commandline workflow for run mothur
@@ -139,4 +141,6 @@ const mothur_workflow as function(work16s) {
         label   = 0.03, 
         logfile = "[13]get.oturep.txt"
     );
+
+    work16s;
 }
