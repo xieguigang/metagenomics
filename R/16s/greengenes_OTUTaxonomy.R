@@ -17,7 +17,10 @@ const greengenes_OTUTaxonomy as function(left, right,
     const is_debug as boolean  = getOption("workflow.debug");
     const blastn as string = getOption("ncbi_blast");
     const refalign as string = getOption("mothur_template");
-    const [greengenes, taxonomy] = Metagenomics::greengenes_opts();
+    const greengenes = Metagenomics::greengenes_opts();
+
+    print("greengenes database:");
+    str(greengenes);
 
     # config to absolute file path.
     left      = normalizePath(left);
@@ -28,6 +31,8 @@ const greengenes_OTUTaxonomy as function(left, right,
     if (!skip_mothur) {
         # 使用mothur程序组装测序结果为contig，生成OTU序列文件
         work16s = Metagenomics::mothur_OTU(left, right, refalign, outputdir, num_threads); 
+    } else {
+        print("Skip of run mothur OTU workflow...");
     }
 
     # 在这里进行SILVA的16S数据库的比对操作，进行OTU序列所属的物种鉴定
@@ -42,10 +47,10 @@ const greengenes_OTUTaxonomy as function(left, right,
     ;
 
     # 进行blastn序列比对操作来完成物种鉴定
-    const blastn_cli as string = `
+    blastn_cli = `
         ${blastn} 
             -query  ${work16s$OTU_rep} 
-            -db     ${greengenes} 
+            -db     ${greengenes[[1]]} 
             -out    "${outputdir}/OTU_greengene_99.txt" 
             -evalue 1e-50 
             -num_threads ${num_threads}
