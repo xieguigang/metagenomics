@@ -19,13 +19,31 @@ const mothur_OTU as function(left, right, refalign,
         silva       = refalign
     );
 
-    make.contigs(left, right, outputdir, num_threads = num_threads);
+    using workdir as workdir(outputdir) {
+        work16s |> mothur_workflow();
+    }
+
+    print("Mothur job done!");
+}
+
+#' commandline workflow for run mothur
+#' 
+#' @param work16s the 16s workflow workspace object, contains necessary
+#'    parameter files.
+#' 
+#' @details you must change of current work directory to the output 
+#'    directory, due to the reason of all of the data file path in 
+#'    this workflow function is relative path to the result data directory
+#'    ``outputdir``.
+#' 
+const mothur_workflow as function(work16s) {
+    make.contigs(work16s$left, work16s$right, num_threads = work16s$num_threads);
     work16s$contig.fasta = write_contig("16s.trim.contigs.fasta");
 
     # RunAutoScreen
     # summary.seqs + screen.seqs 
     # 
-    work16s$contig.fasta |> screen.seqs(num_threads = num_threads);
+    work16s$contig.fasta |> screen.seqs(num_threads = work16s$num_threads);
     work16s$contigs = "contig.good.fasta";
     work16s$groups  = "16s.contigs.good.groups";
 
@@ -38,7 +56,7 @@ const mothur_OTU as function(left, right, refalign,
     summary.seqs(
         seqfile     = "contig.good.unique.fasta", 
         count_table = work16s$count_table,
-        num_threads = num_threads, 
+        num_threads = work16s$num_threads, 
         logfile     = "[6]summary.seqs.txt"
     );
 
@@ -111,6 +129,4 @@ const mothur_OTU as function(left, right, refalign,
         label   = 0.03, 
         logfile = "[13]get.oturep.txt"
     );
-
-    print("Mothur job done!");
 }

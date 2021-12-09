@@ -13,19 +13,17 @@
 #' The first column is the group, the second is the forward fastq and 
 #' the third column contains the reverse fastq.
 #' 
-const make.contigs as function(left, right, outputdir, num_threads = 8) {
-    using workdir as workdir(outputdir) {
-        # write raw data sequence file inputs
-        # at here
-        cat(`16s\t${left}\t${right}`, file = `${outputdir}/16s.files`);
-        
-        # run mothur make.contigs command
-        runMothur(
-            command = "make.contigs",
-            argv    = list(file="16s.files", processors=num_threads), 
-            log     = "[1]make.contigs.txt"
-        );
-    }
+const make.contigs as function(left, right, num_threads = 8) {
+    # write raw data sequence file inputs
+    # at here
+    cat(`16s\t${left}\t${right}`, file = "./16s.files");
+    
+    # run mothur make.contigs command
+    runMothur(
+        command = "make.contigs",
+        argv    = list(file="16s.files", processors=num_threads), 
+        log     = "[1]make.contigs.txt"
+    );
 
     # result content files should be appears in the 
     # output directory:

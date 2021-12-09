@@ -18,7 +18,8 @@ const greengenes_OTUTaxonomy as function(left, right,
     const refalign as string = getOption("mothur_template");
     const [greengenes, taxonomy] = Metagenomics::greengenes_opts();
 
-    mothur_OTU(left, right, refalign, outputdir, num_threads); 
+    # 使用mothur程序组装测序结果为contig，生成OTU序列文件
+    Metagenomics::mothur_OTU(left, right, refalign, outputdir, num_threads); 
 
     # 在这里进行SILVA的16S数据库的比对操作，进行OTU序列所属的物种鉴定
     # 首先需要将OTU的fasta文件之中由于前面的mothur程序align的空格和连接符都删除掉
@@ -41,6 +42,7 @@ const greengenes_OTUTaxonomy as function(left, right,
             -num_threads ${num_threads}
     `;
     
+    print("commandline for run taxonomy annotation:");
     print(blastn_cli);    
 
     if (!is_debug) {
