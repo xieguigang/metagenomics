@@ -12,6 +12,7 @@
 const greengenes_OTUTaxonomy as function(left, right, 
                                          outputdir   = "./", 
                                          num_threads = 32,
+                                         evalue      = 1e-10,
                                          skip_mothur = FALSE) {
 
     const is_debug as boolean  = getOption("workflow.debug");
@@ -51,10 +52,10 @@ const greengenes_OTUTaxonomy as function(left, right,
     # 进行blastn序列比对操作来完成物种鉴定
     blastn_cli = `
         ${blastn} 
-            -query  ${work16s$OTU_rep} 
-            -db     ${greengenes[[1]]} 
+            -query  "${work16s$OTU_rep}" 
+            -db     "${greengenes[[1]]}" 
             -out    "${outputdir}/OTU_greengene_99.txt" 
-            -evalue 1e-50 
+            -evalue "${evalue}"
             -num_threads ${num_threads}
     `;
     

@@ -36,6 +36,9 @@ const mothur as string = ?"--mothur" || "/opt/metagenomics/mothur/mothur";
         database."]
 const blast_bin as string = ?"--blast+" || "/opt/metagenomics/ncbi-blast-2.12.0+/bin";
 
+[@info "the e-value cutoff of the blastn search pipeline. default e-value is 1e-10."]
+const evalue as double = ?"--evalue" || 1e-10;
+
 [@info "skip of run mothur workflow for generate OTU sequence dataset? 
         this options is usually apply for run workflow debug."]
 const skip_mothur as boolean = ?"--skip-mothur";
@@ -63,5 +66,6 @@ Metagenomics::greengenes_OTUTaxonomy(
         left, right, 
         outputdir   = outputdir, 
         num_threads = num_threads,
-        skip_mothur = skip_mothur
+        skip_mothur = skip_mothur,
+        evalue      = evalue
 );
