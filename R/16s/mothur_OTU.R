@@ -46,8 +46,11 @@ const mothur_workflow as function(work16s) {
     print(getwd());
 
     cat("\n\n");
-    cat("-------------------------========================================================-------------\n");
-    cat("Schloss, P.D., et al., Introducing mothur: Open-source, platform-independent, community-supported software for describing and comparing microbial communities. Appl Environ Microbiol, 2009. 75(23):7537-41.\n\n");
+    cat("-----------------------------=======================================================================-----------------------------------\n");
+    cat("Schloss, P.D., et al.,\n");
+    cat("Introducing mothur: Open-source, platform-independent, community-supported software for describing and comparing microbial communities.\n");
+    cat("Appl Environ Microbiol, 2009. 75(23):7537-41.\n");
+    cat("\n");
 
     make.contigs(work16s$left, work16s$right, num_threads = work16s$num_threads);
     work16s$contig.fasta = write_contig("16s.trim.contigs.fasta");
