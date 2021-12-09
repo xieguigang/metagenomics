@@ -181,15 +181,15 @@ const count.seqs as function(names, groups) {
 #' template database is based on the secondary structure, then the resulting 
 #' alignment will at least be implicitly based on the secondary structure.
 #' 
-const align.seqs as function(contigs, silva, 
+const align.seqs as function(contigs, reference, 
                              flip        = "F", 
                              num_threads = 8, 
                              logfile     = "[7]align.seqs.txt") {
     runMothur(
         command = "align.seqs",
         argv    = list(
-            fasta      = contigs,
-            reference  = silva,
+            candidate  = contigs,
+            template   = reference,
             flip       = flip,
             processors = num_threads
         ),

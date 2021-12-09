@@ -7,7 +7,7 @@
 #' @param num_threads the number of the processor threads that 
 #'    will be used in the mothur software.
 #' 
-const mothur_OTU as function(left, right, 
+const mothur_OTU as function(left, right, refalign,
                              outputdir   = "./", 
                              num_threads = 32) {
 
@@ -15,7 +15,8 @@ const mothur_OTU as function(left, right,
         left        = left, 
         right       = right, 
         outputdir   = outputdir, 
-        num_threads = num_threads
+        num_threads = num_threads,
+        silva       = refalign
     );
 
     make.contigs(left, right, outputdir, num_threads = num_threads);
@@ -46,7 +47,7 @@ const mothur_OTU as function(left, right,
 
     work16s$contigs = "contig.fasta";
     work16s$contigs |> align.seqs(        
-        silva       = work16s$silva,
+        reference   = work16s$silva,
         flip        = "T",
         num_threads = work16s$num_threads, 
         logfile     = "[7]align.seqs.txt"

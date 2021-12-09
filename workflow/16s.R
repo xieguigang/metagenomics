@@ -42,12 +42,17 @@ const blast_bin as string = ?"--blast+" || "/opt/metagenomics/ncbi-blast-2.12.0+
         from the mothur release page: 
         https://mothur.org/wiki/greengenes-formatted_databases/"]
 const greengenes as string = ?"--greengenes" || "/opt/metagenomics/greengenes/taxonomy/gg_13_8_99.fasta+gg_13_8_99.gg.tax";
+[@info "the reference template file for run mothur alignment of 
+        the generated contig fasta sequence file."]
+[@type "*.fasta"]
+const template as string = ?"--template" || "/opt/metagenomics/greengenes/refalign/gg_13_8_99.refalign";
 
 #region "config workspace"
 options(workflow.debug = workflow_debug);
 options(mothur = mothur);
 options(ncbi_blast = `${blast_bin}/blastn`);
 options(greengenes = greengenes);
+options(mothur_template = template);
 #end region
 
 Metagenomics::mothur_OTU(

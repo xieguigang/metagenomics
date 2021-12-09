@@ -16,8 +16,9 @@ const greengenes_OTUTaxonomy as function(left, right,
     const is_debug as boolean  = getOption("workflow.debug");
     const blastn as string     = getOption("ncbi_blast");
     const greengenes as string = greengenes_opts();
+    const refalign as string   = getOption("mothur_template");
 
-    mothur_OTU(left, right, outputdir, num_threads); 
+    mothur_OTU(left, right, refalign, outputdir, num_threads); 
 
     # 在这里进行SILVA的16S数据库的比对操作，进行OTU序列所属的物种鉴定
     # 首先需要将OTU的fasta文件之中由于前面的mothur程序align的空格和连接符都删除掉
