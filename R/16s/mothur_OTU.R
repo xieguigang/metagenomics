@@ -46,10 +46,10 @@ const mothur_OTU as function(left, right,
 
     work16s$contigs = "contig.fasta";
     work16s$contigs |> align.seqs(        
-        silva      = work16s$silva,
-        flip       = "T",
-        processors = work16s$num_threads, 
-        logfile    = "[7]align.seqs.txt"
+        silva       = work16s$silva,
+        flip        = "T",
+        num_threads = work16s$num_threads, 
+        logfile     = "[7]align.seqs.txt"
     );
 
     # contig.align

@@ -53,3 +53,14 @@ const mothurArgvs as function(command, argv) {
     |> paste(deli = ", ")
     ;
 }
+
+#' Parse error message
+#' 
+#' @param stdout the standard output dumpping text of the mothur
+#'    program.
+#' 
+#' @return a error message pair list object.
+#'  
+const mothurErrorParser as function(stdout) {
+
+}
