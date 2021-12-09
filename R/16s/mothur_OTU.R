@@ -11,7 +11,7 @@ const mothur_OTU as function(left, right, refalign,
                              outputdir   = "./", 
                              num_threads = 32) {
 
-    const work16s = list(
+    work16s = list(
         left        = left, 
         right       = right, 
         outputdir   = outputdir, 

@@ -280,7 +280,7 @@ const cluster as function(dist,
                           num_threads = 32, 
                           logfile     = "[11]cluster.txt") {
     runMothur(
-        command = "dist.seqs",
+        command = "cluster",
         argv = list(phylip = dist,
                     method = method,
                     cutoff = cutoff,
