@@ -36,6 +36,10 @@ const mothur as string = ?"--mothur" || "/opt/metagenomics/mothur/mothur";
         database."]
 const blast_bin as string = ?"--blast+" || "/opt/metagenomics/ncbi-blast-2.12.0+/bin";
 
+[@info "skip of run mothur workflow for generate OTU sequence dataset? 
+        this options is usually apply for run workflow debug."]
+const skip_mothur as boolean = ?"--skip-mothur";
+
 [@info "the reference OTU sequnece database for run taxonomy 
         annotation of the OTU contigs which is generated from 
         the mothur software. this database file can be download
@@ -58,5 +62,6 @@ options(mothur_template = template);
 Metagenomics::greengenes_OTUTaxonomy(
         left, right, 
         outputdir   = outputdir, 
-        num_threads = num_threads
+        num_threads = num_threads,
+        skip_mothur = skip_mothur
 );
