@@ -55,8 +55,8 @@ options(greengenes = greengenes);
 options(mothur_template = template);
 #end region
 
-Metagenomics::mothur_OTU(
+Metagenomics::greengenes_OTUTaxonomy(
         left, right, 
-        outputdir   = "./", 
-        num_threads = 32
+        outputdir   = outputdir, 
+        num_threads = num_threads
 );
