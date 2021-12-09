@@ -140,7 +140,7 @@ const screen.seqs as function(contigs, num_threads = 8) {
         );
 
         print("sequence summary result:");
-        print(readLines(file));
+        cat(readText(file));
 
         # filter out all empty string line:
         # argument is of length zero
@@ -186,7 +186,7 @@ const unique.seqs as function(contigs, logfile = "[4]unique.seqs.txt") {
     using workdir as workdir(dirname(contigs)) {
         runMothur(
             command = "unique.seqs",
-            argv    = list(fasta=contigs), 
+            argv    = list(fasta = contigs), 
             log     = logfile
         );
         # contig.good.names
@@ -201,7 +201,7 @@ const unique.seqs as function(contigs, logfile = "[4]unique.seqs.txt") {
 const count.seqs as function(names, groups) {
     runMothur(
         command = "count.seqs",
-        argv    = list(name=names, group=groups), 
+        argv    = list(name = names, group = groups), 
         log     = "[5]count.seqs.txt"
     );
     # contig.good.count_table
@@ -272,16 +272,22 @@ const filter.seqs as function(align, num_threads, logfile = "[8]filter.seqs.txt"
 #' with the column option in the various cluster commands. The command is also able to 
 #' generate a phylip-formatted distance matrix. 
 #' 
-const dist.seqs as function(align_fasta,calc="onegap", countends="F",cutoff=0.03,output="lt",num_threads=32, logfile ="[10]dist.seqs.txt" ) {
+const dist.seqs as function(align_fasta,
+                            calc        = "onegap", 
+                            countends   = "F",
+                            cutoff      = 0.03,
+                            output      = "lt",
+                            num_threads = 32, 
+                            logfile     = "[10]dist.seqs.txt" ) {
     runMothur(
         command = "dist.seqs",
         argv    = list(
-            fasta=align_fasta,
-            calc=calc,
-            countends=countends,
-            cutoff=cutoff,
-            output=output,
-            processors=num_threads
+            fasta      = align_fasta,
+            calc       = calc,
+            countends  = countends,
+            cutoff     = cutoff,
+            output     = output,
+            processors = num_threads
         ),
         log  = logfile
     );
@@ -311,11 +317,19 @@ const dist.seqs as function(align_fasta,calc="onegap", countends="F",cutoff=0.03
 #' contributing to the mothur project or contacting the developers and we’ll see what we 
 #' can do. The opticlust algorithm is the default option.
 #' 
-const cluster as function(dist,method="furthest",cutoff=0.03 ,num_threads = 32, logfile =  "[11]cluster.txt") {
+const cluster as function(dist,
+                          method      = "furthest",
+                          cutoff      = 0.03,
+                          num_threads = 32, 
+                          logfile     = "[11]cluster.txt") {
     runMothur(
         command = "dist.seqs",
-        argv    = list(phylip=dist,method=method,cutoff=cutoff,processors=num_threads),
-        log     = logfile
+        argv = list(phylip = dist,
+                    method = method,
+                    cutoff = cutoff,
+                    processors = num_threads
+        ),
+        log  = logfile
     );
 }
 
@@ -326,7 +340,7 @@ const cluster as function(dist,method="furthest",cutoff=0.03 ,num_threads = 32, 
 const bin.seqs as function(list, contigs, contig.names) {
     runMothur(
         command = "bin.seqs",
-        argv    = list(list=list,fasta=contigs,name=contig.names),
+        argv    = list(list = list, fasta = contigs, name = contig.names),
         log     = "[12]bin.seqs.txt"
     );
 }
@@ -336,10 +350,15 @@ const bin.seqs as function(list, contigs, contig.names) {
 #' for each OTU. A .rep.fasta and .rep.name file or .rep.count_table file is generated 
 #' for each OTU definition.
 #' 
-const get.oturep as function(dist,contig.unique.fasta, list,label=0.03 ) {
+const get.oturep as function(dist, contig.unique.fasta, list, label = 0.03 ) {
     runMothur(
         command = "get.oturep",
-        argv    = list(phylip=dist,fasta=contig.unique.fasta,list=list,label=label),
+        argv    = list(
+            phylip = dist,
+            fasta  = contig.unique.fasta,
+            list   = list,
+            label  = label
+        ),
         log     = "[13]get.oturep.txt"
     );
 }
