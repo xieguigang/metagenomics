@@ -21,9 +21,9 @@ const right as string = ?"--right" || stop("Missing of the right pair-end short 
 const outputdir as string = ?"--outputdir" || `${dirname(left)}/16s_result/`;
 
 [@info "an optional argument for setting up the processors that will be 
-        used in mothur program, by default is using 32 processor 
+        used in mothur program, by default is using 72 processor 
         threads."]
-const num_threads as integer = ?"--num_threads" || 32;
+const num_threads as integer = ?"--num_threads" || 72;
 
 [@info "run debug of the workflow?"]
 const workflow_debug as boolean = ?"--workflow-debug";
