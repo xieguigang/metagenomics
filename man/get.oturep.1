@@ -1,8 +1,8 @@
 ﻿.TH GET.OTUREP 1 2021-12-09 "" "While the bin.seqs command reports the OTU number for all sequences, the ``get.oturep`` command generates a fasta-formatted sequence file containing only a representative sequence for each OTU. A .rep.fasta and .rep.name file or .rep.count_table file is generated for each OTU definition."
 .SH NAME
-get.oturep \- get.oturep(dist, contig.unique.fasta, list, label = 0.03)
+get.oturep \- get.oturep(dist, contig.unique.fasta, list, label = 0.03, logfile = [13]get.oturep.txt)
 .SH SYNOPSIS
-\fIget.oturep(dist, contig.unique.fasta, list, label = 0.03)\fR
+\fIget.oturep(dist, contig.unique.fasta, list, label = 0.03, logfile = [13]get.oturep.txt)\fR
 .SH OPTIONS
 .PP
 \fBdist\fB \fR\- . 
@@ -15,6 +15,9 @@ get.oturep \- get.oturep(dist, contig.unique.fasta, list, label = 0.03)
 .PP
 .PP
 \fBlabel\fB \fR\- 0.03. 
+.PP
+.PP
+\fBlogfile\fB \fR\- [13]get.oturep.txt. 
 .PP
 .SH FILES
 .PP

@@ -40,7 +40,7 @@ const mothur_OTU as function(left, right,
         num_threads = num_threads, 
         logfile     = "[6]summary.seqs.txt"
     );
-    
+
     # contig.good.unique.summary
     write_contig("contig.good.unique.fasta");
 
@@ -95,9 +95,9 @@ const mothur_OTU as function(left, right,
     # contig.unique.phylip.fn.list
     work16s$list = "contig.unique.phylip.fn.list";
     work16s$list |> bin.seqs(
-        contigs = work16s$contigs,
-        name    = "contig.names",
-        logfile = "[12]bin.seqs.txt"
+        contigs      = work16s$contigs,
+        contig.names = "contig.names",
+        logfile      = "[12]bin.seqs.txt"
     );
 
     # contig.unique.phylip.fn.unique.fasta

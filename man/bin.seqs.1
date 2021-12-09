@@ -1,8 +1,8 @@
 ﻿.TH BIN.SEQS 1 2021-12-09 "" "``bin.seqs`` prints out a fasta-formatted file where sequences are ordered according to the OTU that they belong to. Such an output may be helpful for generating primers specific to an OTU or for classification of sequences."
 .SH NAME
-bin.seqs \- bin.seqs(list, contigs, contig.names)
+bin.seqs \- bin.seqs(list, contigs, contig.names, logfile = [12]bin.seqs.txt)
 .SH SYNOPSIS
-\fIbin.seqs(list, contigs, contig.names)\fR
+\fIbin.seqs(list, contigs, contig.names, logfile = [12]bin.seqs.txt)\fR
 .SH OPTIONS
 .PP
 \fBlist\fB \fR\- . 
@@ -12,6 +12,9 @@ bin.seqs \- bin.seqs(list, contigs, contig.names)
 .PP
 .PP
 \fBcontig.names\fB \fR\- . 
+.PP
+.PP
+\fBlogfile\fB \fR\- [12]bin.seqs.txt. 
 .PP
 .SH FILES
 .PP
