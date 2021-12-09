@@ -140,7 +140,9 @@ const screen.seqs as function(contigs, num_threads = 8) {
         );
 
         print("sequence summary result:");
+        cat("\n");
         cat(readText(file));
+        cat("\n\n");
 
         # filter out all empty string line:
         # argument is of length zero
