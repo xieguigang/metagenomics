@@ -339,11 +339,11 @@ const cluster as function(dist,
 #' to the OTU that they belong to. Such an output may be helpful for generating primers 
 #' specific to an OTU or for classification of sequences.
 #' 
-const bin.seqs as function(list, contigs, contig.names) {
+const bin.seqs as function(list, contigs, contig.names, logfile = "[12]bin.seqs.txt") {
     runMothur(
         command = "bin.seqs",
         argv    = list(list = list, fasta = contigs, name = contig.names),
-        log     = "[12]bin.seqs.txt"
+        log     = logfile
     );
 }
 
@@ -352,7 +352,9 @@ const bin.seqs as function(list, contigs, contig.names) {
 #' for each OTU. A .rep.fasta and .rep.name file or .rep.count_table file is generated 
 #' for each OTU definition.
 #' 
-const get.oturep as function(dist, contig.unique.fasta, list, label = 0.03 ) {
+const get.oturep as function(dist, contig.unique.fasta, list, 
+                             label   = 0.03, 
+                             logfile = "[13]get.oturep.txt") {
     runMothur(
         command = "get.oturep",
         argv    = list(
@@ -361,6 +363,6 @@ const get.oturep as function(dist, contig.unique.fasta, list, label = 0.03 ) {
             list   = list,
             label  = label
         ),
-        log     = "[13]get.oturep.txt"
+        log     = logfile
     );
 }
