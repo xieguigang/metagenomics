@@ -18,6 +18,11 @@ const greengenes_OTUTaxonomy as function(left, right,
     const refalign as string = getOption("mothur_template");
     const [greengenes, taxonomy] = Metagenomics::greengenes_opts();
 
+    # config to absolute file path.
+    left      = normalizePath(left);
+    right     = normalizePath(right);
+    outputdir = normalizePath(outputdir);
+
     # 使用mothur程序组装测序结果为contig，生成OTU序列文件
     Metagenomics::mothur_OTU(left, right, refalign, outputdir, num_threads); 
 
