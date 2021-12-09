@@ -24,13 +24,11 @@ const runMothur as function(command, argv, log) {
         stdout = readLines(log);
 
         if (any(stdout like $".*\[ERROR\].*")) {
-            stop(readText(log));
-        } else {
-            0;
-        }
-    } else {
-        0;
+            stop(readText(log));        
+        }    
     }
+
+    return(0);
 }
 
 #' Create commandline arguments
