@@ -5,3 +5,4 @@
 
 # install package
 R# --install.packages ./metagenomics.zip
+R# --install.packages ./GCModeller_1.1.0-beta.zip
