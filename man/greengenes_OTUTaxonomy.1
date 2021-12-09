@@ -1,8 +1,8 @@
 ﻿.TH GREENGENES_OTUTAXONOMY 1 2021-12-09 "" "Workflow for 16s"
 .SH NAME
-greengenes_OTUTaxonomy \- greengenes_OTUTaxonomy(left, right, outputdir = ./, num_threads = 32)
+greengenes_OTUTaxonomy \- greengenes_OTUTaxonomy(left, right, outputdir = ./, num_threads = 32, skip_mothur = FALSE)
 .SH SYNOPSIS
-\fIgreengenes_OTUTaxonomy(left, right, outputdir = ./, num_threads = 32)\fR
+\fIgreengenes_OTUTaxonomy(left, right, outputdir = ./, num_threads = 32, skip_mothur = FALSE)\fR
 .SH DESCRIPTION
 .PP
 Workflow for create 16s data analysis based on the mothur software and NCBI blastn program. Workflow steps in this function includes: 1. create OTU sequence based on the mothur workflow 2. alignment of the OTU sequence with the greengenes database via NCBI blastn pipeline
@@ -19,6 +19,9 @@ Workflow for create 16s data analysis based on the mothur software and NCBI blas
 .PP
 .PP
 \fBnum_threads\fB \fR\- 32. 
+.PP
+.PP
+\fBskip_mothur\fB \fR\- FALSE. 
 .PP
 .SH FILES
 .PP
