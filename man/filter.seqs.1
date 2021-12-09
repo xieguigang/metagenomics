@@ -1,11 +1,21 @@
-﻿.TH FILTER.SEQS 1 2021-12-08 "" "filter.seqs removes columns from alignments based on a criteria defined by the user. For example, alignments generated against reference alignments (e.g. from RDP, SILVA, or greengenes) often have columns where every character is either a ‘.’ or a ‘-‘. These columns are not included in calculating distances because they have no information in them. By removing these columns, the calculation of a large number of distances is accelerated. Also, people also like to mask their sequences to remove variable regions using a soft or hard mask (e.g. Lane’s mask). This type of masking is only encouraged for deep-level phylogenetic analysis, not fine level analysis such as that needed with calculating OTUs."
+﻿.TH FILTER.SEQS 1 2021-12-09 "" "filter.seqs removes columns from alignments based on a criteria defined by the user. For example, alignments generated against reference alignments (e.g. from RDP, SILVA, or greengenes) often have columns where every character is either a ‘.’ or a ‘-‘. These columns are not included in calculating distances because they have no information in them. By removing these columns, the calculation of a large number of distances is accelerated. Also, people also like to mask their sequences to remove variable regions using a soft or hard mask (e.g. Lane’s mask). This type of masking is only encouraged for deep-level phylogenetic analysis, not fine level analysis such as that needed with calculating OTUs."
 .SH NAME
-filter.seqs \- filter.seqs()
+filter.seqs \- filter.seqs(align, num_threads, logfile = [8]filter.seqs.txt)
 .SH SYNOPSIS
-\fIfilter.seqs()\fR
+\fIfilter.seqs(align, num_threads, logfile = [8]filter.seqs.txt)\fR
+.SH OPTIONS
+.PP
+\fBalign\fB \fR\- . 
+.PP
+.PP
+\fBnum_threads\fB \fR\- . 
+.PP
+.PP
+\fBlogfile\fB \fR\- [8]filter.seqs.txt. 
+.PP
 .SH FILES
 .PP
-SMRUCC/R#.declare_function.filter.seqs at mothur.R:line 253
+SMRUCC/R#.declare_function.filter.seqs at mothur.R:line 256
 .PP
 .SH COPYRIGHT
 Copyright © xieguigang <xie.guigang@gcmodeller.org>, MIT Licensed 2021
