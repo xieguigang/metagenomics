@@ -41,11 +41,16 @@ const make.contigs as function(left, right, num_threads = 8) {
 #' 
 const write_contig as function(seqfile, contig.fasta = "contig.fasta") {
     if (file.exists(contig.fasta)) {
+        print(`${contig.fasta} is already exists, going to remove it...`);
         unlink(contig.fasta);
     }
 
     print(`${seqfile} => ${contig.fasta}...`);
-    file.rename(seqfile, contig.fasta);
+    
+    seqfile
+    |> readLines()
+    |> writeLines(con = contig.fasta)
+    ;
     cat("done~!\n");
 
     contig.fasta;
