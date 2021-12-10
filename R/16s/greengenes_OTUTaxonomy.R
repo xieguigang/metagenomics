@@ -69,7 +69,19 @@ const greengenes_OTUTaxonomy as function(left, right,
 
     if (file.exists(work16s$blastnOut)) {
         # run blastn parser
+        csv = `${dirname(work16s$blastnOut)}/${basename(work16s$blastnOut)}.csv`;
+
+        using buffer as open.stream(csv, type = "Mapping", ioRead = FALSE) {
+            work16s$blastnOut 
+            |> getBlastnMapping()
+            |> stream.flush(stream = buffer)
+            ;
+        }
+
+        # run taxonomy annotation and create OTU relative abundance table result.
         
+    } else {
+        stop("error during of run taxonomy annotation process.");
     }
 
     print("greengenes OTU Taxonomy align job done!");
