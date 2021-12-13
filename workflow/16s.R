@@ -89,16 +89,16 @@ options(mothur_template = template);
 #end region
 
 Metagenomics::greengenes_OTUTaxonomy(
-        left, right,
-        outputdir   = outputdir,
-        num_threads = num_threads,
-        skip_mothur = skip_mothur,
-        evalue      = evalue,
-        make.contigs = list(
-                algorithm = alignment,
-                score     = scores
-                |> strsplit("\s*,\s*", fixed = FALSE, perl = TRUE)
-                |> as.numeric(),
-                insert    = insert
-        )
+    left, right,
+    outputdir   = outputdir,
+    num_threads = num_threads,
+    skip_mothur = skip_mothur,
+    evalue      = evalue,
+    make.contigs = list(
+        algorithm = alignment,
+        score     = scores
+        |> strsplit("\s*,\s*", fixed = FALSE, perl = TRUE)
+        |> as.numeric(),
+        insert    = insert
+    )
 );
