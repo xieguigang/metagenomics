@@ -1,11 +1,21 @@
-﻿.TH ALIGN_GREENGENES 1 2021-12-10 "" "align_greengenes"
+﻿.TH ALIGN_GREENGENES 1 2021-12-13 "" "Align greengenes database for taxonomy annotation"
 .SH NAME
-align_greengenes \- align_greengenes()
+align_greengenes \- align_greengenes(work16s, blastn = getOption(ncbi_blast), is_debug = getOption(workflow.debug))
 .SH SYNOPSIS
-\fIalign_greengenes()\fR
+\fIalign_greengenes(work16s, blastn = getOption(ncbi_blast), is_debug = getOption(workflow.debug))\fR
+.SH OPTIONS
+.PP
+\fBwork16s\fB \fR\- . the workspace object which is comes from the ``greengenes_OTUTaxonomy`` function.
+.PP
+.PP
+\fBblastn\fB \fR\- getOption(ncbi_blast). the executable file path of the NCBI blastn program.
+.PP
+.PP
+\fBis_debug\fB \fR\- getOption(workflow.debug). run in debug mode?
+.PP
 .SH FILES
 .PP
-SMRUCC/R#.declare_function.align_greengenes at ncbi_taxonomy.R:line 6
+SMRUCC/R#.declare_function.align_greengenes at taxonomy.R:line 14
 .PP
 .SH COPYRIGHT
 Copyright © xieguigang <xie.guigang@gcmodeller.org>, MIT Licensed 2021
