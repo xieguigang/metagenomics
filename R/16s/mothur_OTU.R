@@ -46,27 +46,47 @@ const mothur_workflow as function(work16s) {
     print(getwd());
 
     cat("\n\n");
-    cat("-----------------------------=======================================================================-----------------------------------\n");
+    cat("-------------===============================================--------------\n");
     cat("Schloss, P.D., et al.,\n");
-    cat("Introducing mothur: Open-source, platform-independent, community-supported software for describing and comparing microbial communities.\n");
+    cat("Introducing mothur: Open-source, platform-independent, community-supported\n");
+    cat("software for describing and comparing microbial communities.\n");
     cat("Appl Environ Microbiol, 2009. 75(23):7537-41.\n");
     cat("\n");
 
+    # make.contigs
+    # 16s_result/16s.files
+    # 16s_result/16s.scrap.contigs.fasta
+    # 16s_result/16s.contigs.groups
+    # 16s_result/16s.contigs.report
+    # 16s_result/16s.trim.contigs.fasta
+    # 16s_result/[1]make.contigs.txt
     make.contigs(work16s$left, work16s$right, num_threads = work16s$num_threads);
+    # result file renames to contig.fasta
     work16s$contig.fasta = write_contig("16s.trim.contigs.fasta");
 
     # RunAutoScreen
     # summary.seqs + screen.seqs
     #
+    # 16s_result/contig.bad.accnos
+    # 16s_result/contig.good.fasta
+    # 16s_result/16s.contigs.good.groups
+    # 16s_result/[3]screen.seqs.txt
     work16s$contig.fasta |> screen.seqs(num_threads = work16s$num_threads);
     work16s$contigs = "contig.good.fasta";
     work16s$groups  = "16s.contigs.good.groups";
 
+    # 16s_result/[4]unique.seqs.txt
+    # 16s_result/contig.good.names
+    # 16s_result/contig.good.unique.fasta
     unique.seqs(work16s$contigs, logfile = "[4]unique.seqs.txt");
 
+    # 16s_result/[5]count.seqs.txt
+    # 16s_result/contig.good.count_table
     work16s$names = "contig.good.names";
     work16s$names |> count.seqs(groups= work16s$groups);
 
+    # 16s_result/[6]summary.seqs.txt
+    # 16s_result/contig.good.unique.summary
     work16s$count_table = "contig.good.count_table";
     summary.seqs(
         seqfile     = "contig.good.unique.fasta",
@@ -76,8 +96,13 @@ const mothur_workflow as function(work16s) {
     );
 
     # contig.good.unique.summary
+    #  -> contig.fasta
     write_contig("contig.good.unique.fasta");
 
+    # 16s_result/contig.align
+    # 16s_result/[7]align.seqs.txt
+    # 16s_result/contig.align.report
+    # 16s_result/contig.flip.accnos
     work16s$contigs = "contig.fasta";
     work16s$contigs |> align.seqs(
         reference   = work16s$silva,
@@ -86,9 +111,9 @@ const mothur_workflow as function(work16s) {
         logfile     = "[7]align.seqs.txt"
     );
 
-    # contig.align
-    # contig.align.report
-    # contig.flip.accnos
+    # 16s_result/[8]filter.seqs.txt
+    # 16s_result/contig.filter
+    # 16s_result/contig.filter.fasta
     work16s$align = "contig.align";
     work16s$align |> filter.seqs(
         num_threads = work16s$num_threads,
@@ -97,7 +122,11 @@ const mothur_workflow as function(work16s) {
 
     # contig.filter
     # contig.filter.fasta
-    write_contig("contig.filter.fasta");
+    #  -> contig.fasta
+    write_contig("contig.filter.fasta", work16s$contigs);
+    # 16s_result/contig.unique.fasta
+    # 16s_result/[9]unique.seqs.txt
+    # 16s_result/contig.names
     unique.seqs(
         contigs = work16s$contigs,
         logfile = "[9]unique.seqs.txt"
@@ -106,6 +135,8 @@ const mothur_workflow as function(work16s) {
     # contig.names
     # contig.unique.fasta
     work16s$align = "contig.unique.fasta";
+    # 16s_result/[10]dist.seqs.txt
+    # 16s_result/contig.unique.phylip.dist
     work16s$align |> dist.seqs(
         calc        = "onegap",
         countends   = "F",
@@ -117,6 +148,10 @@ const mothur_workflow as function(work16s) {
 
     # contig.unique.phylip.dist
     work16s$dist = "contig.unique.phylip.dist";
+    # 16s_result/contig.unique.phylip.fn.list
+    # 16s_result/contig.unique.phylip.fn.rabund
+    # 16s_result/contig.unique.phylip.fn.sabund
+    # 16s_result/[11]cluster.txt
     work16s$dist |> cluster(
         method      = "furthest",
         cutoff      = 0.03,
@@ -128,16 +163,22 @@ const mothur_workflow as function(work16s) {
     # contig.unique.phylip.fn.rabund
     # contig.unique.phylip.fn.list
     work16s$list = "contig.unique.phylip.fn.list";
+    # 16s_result/contig.count_table
+    # 16s_result/contig.unique.phylip.fn.0.01.pick.list
+    # 16s_result/contig.unique.phylip.fn.unique.list
+    # 16s_result/contig.unique.phylip.fn.0.02.pick.list
+    # 16s_result/contig.unique.phylip.fn.0.03.pick.list
+    # 16s_result/[12]bin.seqs.txt
     work16s$list |> bin.seqs(
         contigs      = work16s$contigs,
         contig.names = "contig.names",
         logfile      = "[12]bin.seqs.txt"
     );
 
-    # contig.unique.phylip.fn.unique.fasta
-    # contig.unique.phylip.fn.0.01.fasta
-    # contig.unique.phylip.fn.0.02.fasta
-    # contig.unique.phylip.fn.0.03.fasta
+    # sftp://xieguigang@192.168.0.207/home/xieguigang/16s/test/16s_result/contig.unique.phylip.fn.unique.unique.fasta
+    # sftp://xieguigang@192.168.0.207/home/xieguigang/16s/test/16s_result/contig.unique.phylip.fn.unique.rep.fasta
+    # sftp://xieguigang@192.168.0.207/home/xieguigang/16s/test/16s_result/contig.unique.phylip.fn.unique.rep.names
+    # sftp://xieguigang@192.168.0.207/home/xieguigang/16s/test/16s_result/[13]get.oturep.txt
     work16s$dist |> get.oturep(
         contig.unique.fasta = "contig.unique.fasta",
         list    = work16s$list,

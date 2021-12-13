@@ -38,6 +38,11 @@ const make.contigs as function(left, right, num_threads = 8) {
 }
 
 #' Contig file renames
+#' 
+#' @param seqfile the source sequence file
+#' @param contig.fasta the target renamed sequence file.
+#' 
+#' @return the parameter value comes from the ``contig.fasta`` parameter.
 #'
 const write_contig as function(seqfile, contig.fasta = "contig.fasta") {
     if (file.exists(contig.fasta)) {
@@ -87,6 +92,8 @@ const screen.seqs as function(contigs, num_threads = 8) {
         const summary = list(min = 0, max = 0);
         const groups  = "16s.contigs.groups";
 
+        # sftp://xieguigang:biodeep123@192.168.0.207/home/xieguigang/16s/test/16s_result/[2]summary.seqs.txt
+        # sftp://xieguigang:biodeep123@192.168.0.207/home/xieguigang/16s/test/16s_result/contig.summary
         summary.seqs(
             seqfile     = contigs,
             count_table = NULL,
