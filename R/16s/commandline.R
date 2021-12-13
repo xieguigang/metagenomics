@@ -1,9 +1,9 @@
 #' the mothur cli wrapper
-#' 
-#' @details Schloss PD et al. 2009. Introducing mothur: Open-source, 
-#'   platform-independent, community-supported software for describing 
-#'   and comparing microbial communities. Applied and Environmental 
-#'   Microbiology 75:7537–7541. 
+#'
+#' @details Schloss PD et al. 2009. Introducing mothur: Open-source,
+#'   platform-independent, community-supported software for describing
+#'   and comparing microbial communities. Applied and Environmental
+#'   Microbiology 75:7537–7541.
 #'
 #' @param command the mothur command string.
 #' @param log the logfile file path.
@@ -24,18 +24,18 @@ const runMothur as function(command, argv, log) {
         stdout = readLines(log);
 
         if (any(stdout like $".*\[ERROR\].*")) {
-            stop(readText(log));        
-        }    
+            stop(readText(log));
+        }
     }
 
     return(0);
 }
 
 #' Create commandline arguments
-#' 
+#'
 #' @param argv a list object that contains commandline parameters for
-#'    run a specific mothur command. commandline argument which it has 
-#'    ``NULL`` value will be ignored in this function. 
+#'    run a specific mothur command. commandline argument which it has
+#'    ``NULL`` value will be ignored in this function.
 #'
 const mothurArgvs as function(command, argv) {
     for(name in names(argv)) {
@@ -44,7 +44,7 @@ const mothurArgvs as function(command, argv) {
         }
     }
 
-    argv 
+    argv
     |> names()
     |> which(key -> !is.null(argv[[key]]))
     |> sapply(key -> `${key}=${argv[[key]]}`)
@@ -53,12 +53,12 @@ const mothurArgvs as function(command, argv) {
 }
 
 #' Parse error message
-#' 
+#'
 #' @param stdout the standard output dumpping text of the mothur
 #'    program.
-#' 
+#'
 #' @return a error message pair list object.
-#'  
+#'
 const mothurErrorParser as function(stdout) {
 
 }

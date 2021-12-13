@@ -5,15 +5,15 @@ const align_silva as function(blastn = getOption("ncbi_blast")) {
 }
 
 #' Align greengenes database for taxonomy annotation
-#' 
-#' @param work16s the workspace object which is comes 
+#'
+#' @param work16s the workspace object which is comes
 #'      from the ``greengenes_OTUTaxonomy`` function.
-#' @param blastn the executable file path of the NCBI 
+#' @param blastn the executable file path of the NCBI
 #'      blastn program.
 #' @param is_debug run in debug mode?
-#' 
-const align_greengenes as function(work16s, 
-                                   blastn   = getOption("ncbi_blast"), 
+#'
+const align_greengenes as function(work16s,
+                                   blastn   = getOption("ncbi_blast"),
                                    is_debug = getOption("workflow.debug")) {
 
     print("Inspect of workflow arguments:");
@@ -22,19 +22,19 @@ const align_greengenes as function(work16s,
     # 进行blastn序列比对操作来完成物种鉴定
     is_debug = as.logical(is_debug);
     blastn_cli = `
-        ${blastn} 
-            -query  "${work16s$OTU_rep}" 
-            -db     "${work16s$greengenes[[1]]}" 
-            -out    "${work16s$blastnOut}" 
+        ${blastn}
+            -query  "${work16s$OTU_rep}"
+            -db     "${work16s$greengenes[[1]]}"
+            -out    "${work16s$blastnOut}"
             -evalue "${work16s$evalue}"
             -num_threads ${work16s$num_threads}
     `;
-    
+
     print("commandline for run taxonomy annotation:");
-    print(blastn_cli);    
+    print(blastn_cli);
 
     if (!is_debug) {
-        blastn_cli |> system(intern = TRUE);    
+        blastn_cli |> system(intern = TRUE);
     } else {
         print("skip of run blastn in debug model!");
     }
@@ -44,20 +44,20 @@ const align_greengenes as function(work16s,
         csv = `${dirname(work16s$blastnOut)}/${basename(work16s$blastnOut)}.csv`;
 
         using buffer as open.stream(csv, type = "Mapping", ioRead = FALSE) {
-            work16s$blastnOut 
+            work16s$blastnOut
             |> getBlastnMapping()
             |> stream.flush(stream = buffer)
             ;
         }
 
         if (file.exists(csv)) {
-            csv 
-            |> read.csv() 
+            csv
+            |> read.csv()
             |> print(max.print = 10)
             ;
         }
 
-        # run taxonomy annotation and create OTU 
+        # run taxonomy annotation and create OTU
         # relative abundance table result.
         gast = work16s |> taxonomy_annotation();
 
@@ -68,11 +68,11 @@ const align_greengenes as function(work16s,
 }
 
 #' Do taxonomy annotation for the OTU contigs
-#' 
+#'
 #' @param OTU_mapping the blastn search result table.
-#' 
+#'
 #' @return the 16s raw data processing pipeline final result.
-#' 
+#'
 const taxonomy_annotation as function(work16s) {
     print("Do taxonomy annotation for the OTU contigs");
     print("via gast algorithm module!");
@@ -113,17 +113,17 @@ const taxonomy_annotation as function(work16s) {
     cat("#####################################################################################\n");
     cat("\n\n\n");
 
-    taxonomy = parse.greengenes_tax(work16s$greengenes$taxonomy);  
+    taxonomy = parse.greengenes_tax(work16s$greengenes$taxonomy);
     OTU_rep = work16s$OTU_rep |> parse.mothur_OTUs();
-    gast = work16s$blastnOut 
-        |> read.blast(type = "nucl") 
-        |> OTU.taxonomy(
-            OTUs           = OTU_rep, 
-            taxonomy       = taxonomy, 
-            gast.consensus = FALSE
-        )
-        |> as.vector
-        ;
+    gast = work16s$blastnOut
+    |> read.blast(type = "nucl")
+    |> OTU.taxonomy(
+        OTUs           = OTU_rep,
+        taxonomy       = taxonomy,
+        gast.consensus = FALSE
+    )
+    |> as.vector
+    ;
 
     gast;
 }
