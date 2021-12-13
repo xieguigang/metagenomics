@@ -119,6 +119,7 @@ const taxonomy_annotation as function(work16s) {
             taxonomy       = taxonomy, 
             gast.consensus = FALSE
         )
+        |> as.vector
         ;
 
     gast;
