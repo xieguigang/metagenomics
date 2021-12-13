@@ -47,7 +47,7 @@ const greengenes_OTUTaxonomy as function(left, right,
     work16s$evalue     = evalue;
     work16s$fasta
     |> readLines()
-    |> gsub(".", "-", regexp = FALSE)
+    |> gsub(".", "", regexp = FALSE)
     |> writeLines(con = work16s$OTU_rep)
     ;
 
