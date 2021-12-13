@@ -48,6 +48,12 @@ const write_contig as function(seqfile, contig.fasta = "contig.fasta") {
     if (file.exists(contig.fasta)) {
         print(`${contig.fasta} is already exists, going to remove it...`);
         unlink(contig.fasta);
+
+        if (file.exists(contig.fasta)) {
+            print("unlink of target file is not working!");
+        } else {
+            print("yes!");
+        }
     }
 
     print(`${seqfile} => ${contig.fasta}...`);
