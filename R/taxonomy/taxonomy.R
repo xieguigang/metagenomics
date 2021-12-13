@@ -1,3 +1,4 @@
+imports "gast" from "metagenomics_kit";
 
 const align_silva as function(blastn = getOption("ncbi_blast")) {
 
@@ -46,8 +47,16 @@ const align_greengenes as function(work16s,
             ;
         }
 
-        # run taxonomy annotation and create OTU relative abundance table result.
-        work16s |> taxonomy_annotation(read.csv(csv));
+        if (file.exists(csv)) {
+            csv 
+            |> read.csv() 
+            |> print(max.print = 10)
+            ;
+        }
+
+        # run taxonomy annotation and create OTU 
+        # relative abundance table result.
+        work16s |> taxonomy_annotation();
 
     } else {
         stop("error during of run taxonomy annotation process.");
@@ -58,7 +67,7 @@ const align_greengenes as function(work16s,
 #' 
 #' @param OTU_mapping the blastn search result table.
 #' 
-const taxonomy_annotation as function(work16s, OTU_mapping) {
-    print(OTU_mapping, max.print = 10);
-
+const taxonomy_annotation as function(work16s) {
+    taxonomy = parse.greengenes_tax(work16s$greengenes$taxonomy);
+    blastn = work16s$blastnOut |> read.blast(type = "nucl");
 }
