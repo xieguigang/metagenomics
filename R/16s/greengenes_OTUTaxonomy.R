@@ -27,7 +27,10 @@ const greengenes_OTUTaxonomy as function(left, right,
     left      = normalizePath(left);
     right     = normalizePath(right);
     outputdir = normalizePath(outputdir);
-    work16s   = list(outputdir = outputdir);
+    work16s   = list(
+        outputdir   = outputdir, 
+        num_threads = num_threads
+    );
 
     if (!skip_mothur) {
         # 使用mothur程序组装测序结果为contig，生成OTU序列文件
