@@ -13,7 +13,6 @@ require(GCModeller);
 const getBlastnMapping as function(outTxt) {
     outTxt 
     |> read.blast(type = "nucl")
-    |> blastn.maphit()
+    |> blastn.maphit(top.best = TRUE)
     ;
 }
-

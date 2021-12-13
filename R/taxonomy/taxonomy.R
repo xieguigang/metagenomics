@@ -59,6 +59,6 @@ const align_greengenes as function(work16s,
 #' @param OTU_mapping the blastn search result table.
 #' 
 const taxonomy_annotation as function(work16s, OTU_mapping) {
-    print(OTU_mapping, max.prints = 10);
+    print(OTU_mapping, max.print = 10);
 
 }
