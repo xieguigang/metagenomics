@@ -9,11 +9,20 @@
 #'    2. alignment of the OTU sequence with the greengenes database
 #'       via NCBI blastn pipeline
 #'
+#' @param make.contigs the parameters for run short reads assembler function
+#'    from the mothur program. About the parameter usage notes, reference to
+#'    the ``make.contigs`` function.
+#' 
 const greengenes_OTUTaxonomy as function(left, right,
-                                         outputdir   = "./",
-                                         num_threads = 32,
-                                         evalue      = 1e-10,
-                                         skip_mothur = FALSE) {
+                                         outputdir    = "./",
+                                         num_threads  = 32,
+                                         evalue       = 1e-10,
+                                         make.contigs = list(
+                                             algorithm = "needleman", 
+                                             score     = [1.0, -1.0, -2.0, -1.0],
+                                             insert    = 20
+                                         ), 
+                                         skip_mothur  = FALSE) {
 
     const is_debug as boolean  = getOption("workflow.debug");
     const blastn as string = getOption("ncbi_blast");
@@ -29,12 +38,19 @@ const greengenes_OTUTaxonomy as function(left, right,
     outputdir = normalizePath(outputdir);
     work16s   = list(
         outputdir   = outputdir,
-        num_threads = num_threads
+        num_threads = num_threads,
+        assembler   = make.contigs
     );
 
     if (!skip_mothur) {
         # 使用mothur程序组装测序结果为contig，生成OTU序列文件
-        work16s = Metagenomics::mothur_OTU(left, right, refalign, outputdir, num_threads);
+        work16s = Metagenomics::mothur_OTU(
+            left, right, 
+            refalign    = refalign, 
+            outputdir   = outputdir, 
+            assembler   = make.contigs, 
+            num_threads = num_threads
+        );
     } else {
         print("Skip of run mothur OTU workflow...");
     }

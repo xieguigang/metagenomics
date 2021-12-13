@@ -9,6 +9,11 @@
 #'
 const mothur_OTU as function(left, right, refalign,
                              outputdir   = "./",
+                             assembler   = list(
+                                algorithm   = "needleman", 
+                                score       = [1.0, -1.0, -2.0, -1.0],
+                                insert      = 20
+                             ),
                              num_threads = 32) {
 
     work16s = list(
@@ -16,7 +21,8 @@ const mothur_OTU as function(left, right, refalign,
         right       = right,
         outputdir   = outputdir,
         num_threads = num_threads,
-        silva       = refalign
+        silva       = refalign,
+        assembler   = assembler
     );
 
     using workdir as workdir(outputdir) {
@@ -60,7 +66,16 @@ const mothur_workflow as function(work16s) {
     # 16s_result/16s.contigs.report
     # 16s_result/16s.trim.contigs.fasta
     # 16s_result/[1]make.contigs.txt
-    make.contigs(work16s$left, work16s$right, num_threads = work16s$num_threads);
+    assembler = work16s$assembler;
+
+    make.contigs(
+        work16s$left, work16s$right, 
+        algorithm   = assembler$algorithm, 
+        score       = assembler$score,
+        insert      = assembler$insert,
+        num_threads = work16s$num_threads
+    );
+    
     # result file renames to contig.fasta
     work16s$contig.fasta = write_contig("16s.trim.contigs.fasta");
 

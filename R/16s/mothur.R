@@ -13,7 +13,32 @@
 #' The first column is the group, the second is the forward fastq and
 #' the third column contains the reverse fastq.
 #'
-const make.contigs as function(left, right, num_threads = 8) {
+#' @param algorithm [align] The align parameter allows you to specify the 
+#'     alignment method to use. Your options are: gotoh and needleman. 
+#'     The default is needleman.
+#' @param score [match & mismatch & gapopen & gapextend] These parameters 
+#'    are used while aligning the sequence read to determine the overlap. 
+#'    The match parameter allows you to specify the bonus for having the 
+#'    same base. The default is 1.0. The mistmatch parameter allows you to 
+#'    specify the penalty for having different bases. The default is -1.0. 
+#'    The gapopen parameter allows you to specify the penalty for opening a 
+#'    gap in an alignment. The default is -2.0. The gapextend parameter 
+#'    allows you to specify the penalty for extending a gap in an alignment. 
+#'    The default is -1.0.
+#' 
+#' @param insert The insert parameter allows you to set a quality scores 
+#'    threshold. When we are merging the overlapping regions, in the case 
+#'    where we are trying to decide whether to keep a base or remove it 
+#'    because the base is compared to a gap in the other fragment, if the 
+#'    base has a quality score below the threshold we eliminate it. 
+#'    Default=20.
+#' 
+const make.contigs as function(left, right, 
+                               algorithm   = ["needleman", "gotoh"], 
+                               score       = [1.0, -1.0, -2.0, -1.0],
+                               insert      = 20,  
+                               num_threads = 8) {
+
     # write raw data sequence file inputs
     # at here
     cat(`16s\t${left}\t${right}`, file = "./16s.files");
@@ -21,7 +46,17 @@ const make.contigs as function(left, right, num_threads = 8) {
     # run mothur make.contigs command
     runMothur(
         command = "make.contigs",
-        argv    = list(file="16s.files", processors=num_threads),
+        argv    = list(
+            file        = "16s.files", 
+            checkorient = "T", 
+            align       = algorithm[1],
+            match       = score[1],
+            mismatch    = score[2],
+            gapopen     = score[3],
+            gapextend   = score[4],
+            insert      = insert,
+            processors  = num_threads
+        ),
         log     = "[1]make.contigs.txt"
     );
 
