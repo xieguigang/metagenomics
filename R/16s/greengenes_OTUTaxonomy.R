@@ -40,10 +40,11 @@ const greengenes_OTUTaxonomy as function(left, right,
     # 首先需要将OTU的fasta文件之中由于前面的mothur程序align的空格和连接符都删除掉
     # 否则blastn程序会报错
     # contig.unique.phylip.fn.unique.rep.fasta
-    work16s$fasta   = `${outputdir}/contig.unique.phylip.fn.unique.rep.fasta`;
-    work16s$OTU_rep = `${outputdir}/OTU.rep.fasta`; 
-    work16s$blastnOut = `${outputdir}/OTU_greengene_99.txt`;
-
+    work16s$fasta      = `${outputdir}/contig.unique.phylip.fn.unique.rep.fasta`;
+    work16s$OTU_rep    = `${outputdir}/OTU.rep.fasta`; 
+    work16s$blastnOut  = `${outputdir}/OTU_greengene_99.txt`;
+    work16s$greengenes = greengenes;
+    work16s$evalue     = evalue;
     work16s$fasta
     |> readLines()
     |> gsub(".", "-", regexp = FALSE)
