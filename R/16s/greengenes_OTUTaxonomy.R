@@ -65,7 +65,7 @@ const greengenes_OTUTaxonomy as function(left, right,
 #' 
 const greengenes_opts as function() {
     const greengenes as string = getOption("greengenes");
-    const name as string       = basename(greengenes);
+    const name as string       = basename(greengenes, withExtensionName = TRUE);
     const parts as string      = strsplit(name, "+", fixed = TRUE);
     const repository as string = dirname(greengenes);
 
