@@ -16,6 +16,9 @@ const align_greengenes as function(work16s,
                                    blastn   = getOption("ncbi_blast"), 
                                    is_debug = getOption("workflow.debug")) {
 
+    print("Inspect of workflow arguments:");
+    str(work16s);
+
     # 进行blastn序列比对操作来完成物种鉴定
     is_debug = as.logical(is_debug);
     blastn_cli = `
