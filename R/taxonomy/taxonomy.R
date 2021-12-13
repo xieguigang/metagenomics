@@ -3,6 +3,14 @@ const align_silva as function(blastn = getOption("ncbi_blast")) {
 
 }
 
+#' Align greengenes database for taxonomy annotation
+#' 
+#' @param work16s the workspace object which is comes 
+#'      from the ``greengenes_OTUTaxonomy`` function.
+#' @param blastn the executable file path of the NCBI 
+#'      blastn program.
+#' @param is_debug run in debug mode?
+#' 
 const align_greengenes as function(work16s, 
                                    blastn   = getOption("ncbi_blast"), 
                                    is_debug = getOption("workflow.debug")) {
