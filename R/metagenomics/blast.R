@@ -16,3 +16,4 @@ const getBlastnMapping as function(outTxt) {
     |> blastn.maphit()
     ;
 }
+
