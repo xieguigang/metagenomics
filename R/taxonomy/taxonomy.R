@@ -71,6 +71,45 @@ const align_greengenes as function(work16s,
 #' @return the 16s raw data processing pipeline final result.
 #' 
 const taxonomy_annotation as function(work16s) {
+    print("Do taxonomy annotation for the OTU contigs");
+    print("via gast algorithm module!");
+
+    cat("\n\n\n");
+    cat("######################################################################################\n");
+    cat("# \n");
+    cat("# gast: compares trimmed sequences against a reference database For assigning taxonomy\n");
+    cat("# \n");
+    cat("# Author: Susan Huse, shuse@mbl.edu\n");
+    cat("# \n");
+    cat("# Date: Fri Feb 25 11:41:10 EST 2011\n");
+    cat("# \n");
+    cat("# Copyright (C) 2011 Marine Biological Laborotory, Woods Hole, MA\n");
+    cat("# \n");
+    cat("# This program Is free software; you can redistribute it And/Or\n");
+    cat("# modify it under the terms Of the GNU General Public License\n");
+    cat("# As published by the Free Software Foundation; either version 2\n");
+    cat("# Of the License, Or (at your Option) any later version.\n");
+    cat("# \n");
+    cat("# This program Is distributed In the hope that it will be useful,\n");
+    cat("# but WITHOUT ANY WARRANTY; without even the implied warranty Of\n");
+    cat("# MERCHANTABILITY Or FITNESS For A PARTICULAR PURPOSE.  See the\n");
+    cat("# GNU General Public License For more details.\n");
+    cat("# \n");
+    cat("# For a copy Of the GNU General Public License, write To the Free Software\n");
+    cat("# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.\n");
+    cat("# Or visit http://www.gnu.org/copyleft/gpl.html\n");
+    cat("# \n");
+    cat("# Keywords: gast taxonomy refssu\n");
+    cat("# \n");
+    cat("# Assumptions:\n");
+    cat("# \n");
+    cat("# Revisions:\n");
+    cat("# \n");
+    cat("# Programming Notes:\n");
+    cat("# \n");
+    cat("#####################################################################################\n");
+    cat("\n\n\n");
+
     taxonomy = parse.greengenes_tax(work16s$greengenes$taxonomy);  
     OTU_rep = work16s$OTU_rep |> parse.mothur_OTUs();
     gast = work16s$blastnOut 
