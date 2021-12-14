@@ -1,6 +1,6 @@
 require(Metagenomics);
 
-print(Metagenomics::pairEnds("F:\\16s\\希尔寿20211116\\原始数据2"));
+print(Metagenomics::mothur_files("F:\\16s\\希尔寿20211116\\原始数据2"));
 
 make.contigs(file=nemabiome.files, processors=2);
 screen.seqs(fasta=nemabiome.trim.contigs.fasta, minlength=200, maxlength=450, maxambig=0, group=nemabiome.contigs.groups, processors=2);
