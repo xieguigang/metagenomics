@@ -18,7 +18,7 @@ const refalign = greengenes_opts(greengenes);
 if (!dir.exists(src)) {
     stop(`invalid data source folder path [${src}]!`);
 } else {
-    setwd(src = normalizePath(src));
+    setwd([src = normalizePath(src)]);
 }
 
 print("get greengenes reference database:");
