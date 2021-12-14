@@ -21,6 +21,9 @@ if (!dir.exists(src)) {
     setwd(src = normalizePath(src));
 }
 
+print("get greengenes reference database:");
+str(refalign);
+
 # generate file: ./16s.files
 Metagenomics::mothur_files(src, "16s.files");
 
