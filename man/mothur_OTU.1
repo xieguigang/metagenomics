@@ -1,8 +1,8 @@
-﻿.TH MOTHUR_OTU 1 2021-12-13 "" "Build OTU based on mothur"
+﻿.TH MOTHUR_OTU 1 2021-12-14 "" "Build OTU based on mothur"
 .SH NAME
-mothur_OTU \- mothur_OTU(left, right, refalign, outputdir = ./, num_threads = 32)
+mothur_OTU \- mothur_OTU(left, right, refalign, outputdir = ./, assembler = list(algorithm = needleman, score = [1, -1, -2, -1], insert = 20), num_threads = 32)
 .SH SYNOPSIS
-\fImothur_OTU(left, right, refalign, outputdir = ./, num_threads = 32)\fR
+\fImothur_OTU(left, right, refalign, outputdir = ./, assembler = list(algorithm = needleman, score = [1, -1, -2, -1], insert = 20), num_threads = 32)\fR
 .SH OPTIONS
 .PP
 \fBleft\fB \fR\- . the left paired-end sequence file.
@@ -15,6 +15,9 @@ mothur_OTU \- mothur_OTU(left, right, refalign, outputdir = ./, num_threads = 32
 .PP
 .PP
 \fBoutputdir\fB \fR\- ./. the result output dir for save temp file
+.PP
+.PP
+\fBassembler\fB \fR\- list(algorithm = needleman, score = [1, -1, -2, -1], insert = 20). 
 .PP
 .PP
 \fBnum_threads\fB \fR\- 32. the number of the processor threads that will be used in the mothur software.

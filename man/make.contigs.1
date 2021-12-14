@@ -1,14 +1,23 @@
-﻿.TH MAKE.CONTIGS 1 2021-12-13 "" "The ``make.contigs`` command reads a forward fastq file and a reverse fastq file and outputs new fasta and report files."
+﻿.TH MAKE.CONTIGS 1 2021-12-14 "" "The ``make.contigs`` command reads a forward fastq file and a reverse fastq file and outputs new fasta and report files."
 .SH NAME
-make.contigs \- make.contigs(left, right, num_threads = 8)
+make.contigs \- make.contigs(left, right, algorithm = [needleman, gotoh], score = [1, -1, -2, -1], insert = 20, num_threads = 8)
 .SH SYNOPSIS
-\fImake.contigs(left, right, num_threads = 8)\fR
+\fImake.contigs(left, right, algorithm = [needleman, gotoh], score = [1, -1, -2, -1], insert = 20, num_threads = 8)\fR
 .SH OPTIONS
 .PP
 \fBleft\fB \fR\- . 
 .PP
 .PP
 \fBright\fB \fR\- . 
+.PP
+.PP
+\fBalgorithm\fB \fR\- [needleman, gotoh]. [align] The align parameter allows you to specify the alignment method to use. Your options are: gotoh and needleman. The default is needleman.
+.PP
+.PP
+\fBscore\fB \fR\- [1, -1, -2, -1]. [match & mismatch & gapopen & gapextend] These parameters are used while aligning the sequence read to determine the overlap. The match parameter allows you to specify the bonus for having the same base. The default is 1.0. The mistmatch parameter allows you to specify the penalty for having different bases. The default is -1.0. The gapopen parameter allows you to specify the penalty for opening a gap in an alignment. The default is -2.0. The gapextend parameter allows you to specify the penalty for extending a gap in an alignment. The default is -1.0.
+.PP
+.PP
+\fBinsert\fB \fR\- 20. The insert parameter allows you to set a quality scores threshold. When we are merging the overlapping regions, in the case where we are trying to decide whether to keep a base or remove it because the base is compared to a gap in the other fragment, if the base has a quality score below the threshold we eliminate it. Default=20.
 .PP
 .PP
 \fBnum_threads\fB \fR\- 8. 
@@ -19,7 +28,7 @@ The make.contigs command parameters are file, ffastq, rfastq, ffasta, rfasta, fq
 .PP
 .SH FILES
 .PP
-SMRUCC/R#.declare_function.make.contigs at mothur.R:line 16
+SMRUCC/R#.declare_function.make.contigs at mothur.R:line 36
 .PP
 .SH COPYRIGHT
 Copyright © xieguigang <xie.guigang@gcmodeller.org>, MIT Licensed 2021

@@ -1,8 +1,8 @@
-﻿.TH GREENGENES_OTUTAXONOMY 1 2021-12-13 "" "Workflow for 16s"
+﻿.TH GREENGENES_OTUTAXONOMY 1 2021-12-14 "" "Workflow for 16s"
 .SH NAME
-greengenes_OTUTaxonomy \- greengenes_OTUTaxonomy(left, right, outputdir = ./, num_threads = 32, evalue = 1E-10, skip_mothur = FALSE)
+greengenes_OTUTaxonomy \- greengenes_OTUTaxonomy(left, right, outputdir = ./, num_threads = 32, evalue = 1E-10, make.contigs = list(algorithm = needleman, score = [1, -1, -2, -1], insert = 20), skip_mothur = FALSE)
 .SH SYNOPSIS
-\fIgreengenes_OTUTaxonomy(left, right, outputdir = ./, num_threads = 32, evalue = 1E-10, skip_mothur = FALSE)\fR
+\fIgreengenes_OTUTaxonomy(left, right, outputdir = ./, num_threads = 32, evalue = 1E-10, make.contigs = list(algorithm = needleman, score = [1, -1, -2, -1], insert = 20), skip_mothur = FALSE)\fR
 .SH DESCRIPTION
 .PP
 Workflow for create 16s data analysis based on the mothur software and NCBI blastn program. Workflow steps in this function includes: 1. create OTU sequence based on the mothur workflow 2. alignment of the OTU sequence with the greengenes database via NCBI blastn pipeline
@@ -24,11 +24,14 @@ Workflow for create 16s data analysis based on the mothur software and NCBI blas
 \fBevalue\fB \fR\- 1E-10. 
 .PP
 .PP
+\fBmake.contigs\fB \fR\- list(algorithm = needleman, score = [1, -1, -2, -1], insert = 20). the parameters for run short reads assembler function from the mothur program. About the parameter usage notes, reference to the ``make.contigs`` function.
+.PP
+.PP
 \fBskip_mothur\fB \fR\- FALSE. 
 .PP
 .SH FILES
 .PP
-SMRUCC/R#.declare_function.greengenes_OTUTaxonomy at greengenes_OTUTaxonomy.R:line 12
+SMRUCC/R#.declare_function.greengenes_OTUTaxonomy at greengenes_OTUTaxonomy.R:line 16
 .PP
 .SH COPYRIGHT
 Copyright © xieguigang <xie.guigang@gcmodeller.org>, MIT Licensed 2021
