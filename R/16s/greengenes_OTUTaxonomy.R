@@ -32,7 +32,13 @@ const greengenes_OTUTaxonomy as function(left, right,
     print("greengenes database:");
     str(greengenes);
 
-    # config to absolute file path.
+    print("config to absolute file path.");
+    print(`left: '${left}'`);
+    print(`right: '${right}'`);
+    print(`outputdir: '${outputdir}'`);
+    
+    cat("#####################################\n\n");
+
     left      = normalizePath(left);
     right     = normalizePath(right);
     outputdir = normalizePath(outputdir);
