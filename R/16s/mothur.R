@@ -369,3 +369,67 @@ const get.oturep as function(dist, contig.unique.fasta, list,
         log     = logfile
     );
 }
+
+#' The classify.seqs command allows the user to use 
+#' several different methods to assign their sequences 
+#' to the taxonomy outline of their choice. Current 
+#' methods include the Wang approach, using a k-nearest 
+#' neighbor consensus and zap. Taxonomy outlines and 
+#' reference sequences can be obtained from the 
+#' taxonomy outline page. The command requires that 
+#' you provide a fasta-formatted input and database 
+#' sequence file and a taxonomy file for the reference 
+#' sequences.
+#' 
+const classify.seqs as function(
+    fasta, 
+    reference, 
+    taxonomy, 
+    method="knn", 
+    numwanted=3,
+    processors=2,
+    logfile = "[14]classify.seqs.txt"  
+) {
+    runMothur(
+        command = "classify.seqs",
+        argv    = list(
+            reference = reference,
+            fasta  = fasta,
+            taxonomy   = taxonomy,
+            method  = method,
+            numwanted = numwanted,
+            processors = processors
+        ),
+        log     = logfile
+    );
+}
+
+#' The summary.tax command reads a taxonomy file and 
+#' an optional name and or group file, and summarizes 
+#' the taxonomy information.
+#' 
+const summary.tax as function(taxonomy, group, logfile = "[15]summary.tax.txt") {
+    runMothur(
+        command = "summary.tax",
+        argv    = list(
+            taxonomy = taxonomy,
+            group = group
+        ),
+        log     = logfile
+    );
+}
+
+#' The split.groups command reads a list, fasta, flow or 
+#' fastq file and count and generates a list, fasta, flow 
+#' or fastq files for each group in the count file.
+#' 
+const split.groups as function(fasta, group, logfile = "[16]split.groups.txt") {
+    runMothur(
+        command = "split.groups",
+        argv    = list(
+            fasta = fasta,
+            group = group
+        ),
+        log     = logfile
+    );
+}

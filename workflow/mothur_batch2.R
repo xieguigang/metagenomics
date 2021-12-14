@@ -10,6 +10,12 @@ const num_threads as integer = ?"--num_threads" || 32;
 [@info "file path to the mothur program executable file."]
 const mothur as string = ?"--mothur" || "/opt/metagenomics/mothur/mothur";
 
+[@info "the data directory path for save the result data files."]
+const outputdir as string = ?"--outputdir" || file.path(src, "16s_results/");
+
+[@info "disable of the file cache?"]
+const disable_cache as boolean = ?"--cache-disable";
+
 [@info "the reference OTU sequnece database for run taxonomy
         annotation of the OTU contigs which is generated from
         the mothur software. this database file can be download
@@ -18,9 +24,15 @@ const mothur as string = ?"--mothur" || "/opt/metagenomics/mothur/mothur";
 const greengenes as string = ?"--greengenes" || "/opt/metagenomics/greengenes/taxonomy/gg_13_8_99.fasta+gg_13_8_99.gg.tax";
 const refalign = greengenes_opts(greengenes);
 
+dir.create(outputdir, recursive = TRUE);
+
+const work16s = list(
+    outputdir = normalizePath(outputdir)
+);
+
 if (!dir.exists(src)) {
     stop(`invalid data source folder path [${src}]!`);
-} else {
+} else {    
     setwd(src);
 }
 
@@ -28,48 +40,73 @@ options(mothur = mothur);
 
 print("get greengenes reference database:");
 str(refalign);
+print("data result files will be saved at:");
+print(work16s$outputdir);
 
 # generate file: ./16s.files
-Metagenomics::mothur_files(getwd(), "16s.files");
+Metagenomics::mothur_files(getwd(), file.path(outputdir, "16s.files"));
 
-# make.contigs
-runMothur(
-    command = "make.contigs",
-    argv    = list(
-        file       = "16s.files", 
-        processors = num_threads
-    ),
-    log     = "[1]make.contigs.txt"
-);
+setwd(work16s$outputdir);
 
-screen.seqs(
-    contigs="16s.trim.contigs.fasta", 
-    num_threads=num_threads
-);
+const check_filecache as function(filename) {
+    if (disable_cache) {
+        FALSE;
+    } else {
+        file.exists(filename);
+    }
+}
+
+if (!check_filecache("16s.trim.contigs.fasta")) {
+    # make.contigs
+    runMothur(
+        command = "make.contigs",
+        argv    = list(
+            file       = "16s.files", 
+            processors = num_threads
+        ),
+        log     = "[1]make.contigs.txt"
+    );
+
+    screen.seqs(
+        contigs="16s.trim.contigs.fasta", 
+        num_threads=num_threads
+    );
+}
+
 stop();
+
 align.seqs(
-    candidate="16s.trim.contigs.good.fasta", 
-    template=refalign$greengenes
+    contigs="16s.trim.contigs.good.fasta", 
+    reference=refalign$greengenes,
+    num_threads = num_threads
 );
-screen.seqs(
-    fasta="16s.trim.contigs.good.align", 
-    alignreport="16s.trim.contigs.good.align.report", 
-    minsim=90, 
-    minscore=10, 
-    group="16s.contigs.good.groups"
+
+runMothur(
+    command = "screen.seqs",
+    argv    = list(
+        fasta     = "16s.trim.contigs.good.align",
+        alignreport="16s.trim.contigs.good.align.report", 
+        minsim=90, 
+        minscore=10, 
+        group="16s.contigs.good.groups"
+    ),
+    log     = "[3]screen.seqs.txt"
 );
+
 classify.seqs(
     fasta="16s.trim.contigs.good.good.align", 
-    template=refalign$greengenes, 
+    reference=refalign$greengenes, 
     taxonomy=refalign$taxonomy, 
     method="knn", 
     processors=num_threads,
     numwanted=3
 );
+
 summary.tax(
-    taxonomy="16s.trim.contigs.good.good.16s_taxonomy_1_3.knn.taxonomy", 
+    taxonomy="16s.trim.contigs.good.good.gg_13_8_99.gg.knn.taxonomy", 
     group="16s.contigs.good.good.groups"
 );
+
 split.groups(
     fasta="16s.trim.contigs.good.fasta", 
     group="16s.contigs.good.groups"

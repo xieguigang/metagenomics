@@ -29,14 +29,14 @@ const pairEnds as function(dir) {
 #' @param dir a directory path which contains the 
 #'    ``R1/R2`` pair-end fastq sequence file.
 #' 
-const mothur_files as function(dir, filename = "16s.files") {
+const mothur_files as function(dir, filename = "./16s.files") {
     print("scan the fastq raw data files...");
 
     # load pair-end file list
     files = pairEnds(dir);
     # write raw data sequence file inputs
     # at here
-    print(files);
+    print(files, max.print = 10);
     
     [sample_id, R1, R2] = files;
 
@@ -45,7 +45,7 @@ const mothur_files as function(dir, filename = "16s.files") {
     |> sapply(function(i) {
         sprintf("%s\t%s/%s.fq\t%s/%s.fq", sample_id[i], dir, R1[i], dir, R2[i]);
     })
-    |> writeLines(con = file.path(dir, filename))
+    |> writeLines(con = filename)
     ;
 
     invisible(NULL);
