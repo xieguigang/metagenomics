@@ -103,18 +103,19 @@ if (!check_filecache("16s.trim.contigs.good.good.align")) {
     );
 }
 
-
-classify.seqs(
-    fasta="16s.trim.contigs.good.good.align", 
-    reference=refalign$greengenes, 
-    taxonomy=refalign$taxonomy, 
-    method="knn", 
-    processors=num_threads,
-    numwanted=3
-);
+if (!check_filecache("16s.trim.contigs.good.good.gg.knn.taxonomy")) {
+    classify.seqs(
+        fasta="16s.trim.contigs.good.good.align", 
+        reference=refalign$greengenes, 
+        taxonomy=refalign$taxonomy, 
+        method="knn", 
+        processors=num_threads,
+        numwanted=3
+    );
+}
 
 summary.tax(
-    taxonomy="16s.trim.contigs.good.good.gg_13_8_99.gg.knn.taxonomy", 
+    taxonomy="16s.trim.contigs.good.good.gg.knn.taxonomy", 
     group="16s.contigs.good.good.groups"
 );
 
