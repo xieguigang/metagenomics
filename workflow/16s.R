@@ -70,7 +70,7 @@ const alignment as string = ?"--alignment" || "needleman";
         the penalty for extending a gap in an alignment. The default is
         -1.0."]
 [@type "match, mismatch, gapopen, gapextend"]
-const scores as string = ?"--scores" || "1.0,-1.0,-2.0,-1.0";
+const scores as string = ?"--scores" || "1.0,-1.0,-2.0,0";
 
 [@info "The insert parameter allows you to set a quality scores threshold.
         When we are merging the overlapping regions, in the case where we
