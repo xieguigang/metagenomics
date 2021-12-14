@@ -29,6 +29,8 @@ const greengenes_OTUTaxonomy as function(left, right,
     const refalign as string = getOption("mothur_template");
     const greengenes = Metagenomics::greengenes_opts();
 
+    dir.create(outputdir, recursive = TRUE);
+
     print("greengenes database:");
     str(greengenes);
 
@@ -36,7 +38,7 @@ const greengenes_OTUTaxonomy as function(left, right,
     print(`left: '${left}'`);
     print(`right: '${right}'`);
     print(`outputdir: '${outputdir}'`);
-    
+
     cat("#####################################\n\n");
 
     left      = normalizePath(left);
