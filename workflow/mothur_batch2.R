@@ -125,5 +125,5 @@ split.groups(
 );
 
 # result file
-# 16s.trim.contigs.good.good.nematode_taxonomy_1_3.knn.tax.summary 
+# 16s.trim.contigs.good.good.gg.knn.tax.summary
 #  -> 16s_results.summary
