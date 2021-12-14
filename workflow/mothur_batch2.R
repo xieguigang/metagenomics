@@ -16,6 +16,11 @@ const outputdir as string = ?"--outputdir" || file.path(src, "16s_results/");
 [@info "disable of the file cache?"]
 const disable_cache as boolean = ?"--cache-disable";
 
+[@info "the reference template file for run mothur alignment of
+        the generated contig fasta sequence file."]
+[@type "*.fasta"]
+const template as string = ?"--template" || "/opt/metagenomics/greengenes/refalign/gg_13_8_99.refalign";
+
 [@info "the reference OTU sequnece database for run taxonomy
         annotation of the OTU contigs which is generated from
         the mothur software. this database file can be download
@@ -26,8 +31,11 @@ const refalign = greengenes_opts(greengenes);
 
 dir.create(outputdir, recursive = TRUE);
 
+refalign$template = template;
+
 const work16s = list(
-    outputdir = normalizePath(outputdir)
+    outputdir = normalizePath(outputdir),
+    refalign = refalign
 );
 
 if (!dir.exists(src)) {
@@ -73,25 +81,28 @@ if (!check_filecache("16s.trim.contigs.fasta")) {
     );
 }
 
-stop();
+if (!check_filecache("16s.trim.contigs.good.align")) {
+    align.seqs(
+        contigs="16s.trim.contigs.good.fasta", 
+        reference=refalign$template,
+        num_threads = num_threads
+    );
+}
 
-align.seqs(
-    contigs="16s.trim.contigs.good.fasta", 
-    reference=refalign$greengenes,
-    num_threads = num_threads
-);
+if (!check_filecache("16s.trim.contigs.good.good.align")) {
+    runMothur(
+        command = "screen.seqs",
+        argv    = list(
+            fasta     = "16s.trim.contigs.good.align",
+            alignreport="16s.trim.contigs.good.align.report", 
+            minsim=90, 
+            minscore=10, 
+            group="16s.contigs.good.groups"
+        ),
+        log     = "[3]screen.seqs.txt"
+    );
+}
 
-runMothur(
-    command = "screen.seqs",
-    argv    = list(
-        fasta     = "16s.trim.contigs.good.align",
-        alignreport="16s.trim.contigs.good.align.report", 
-        minsim=90, 
-        minscore=10, 
-        group="16s.contigs.good.groups"
-    ),
-    log     = "[3]screen.seqs.txt"
-);
 
 classify.seqs(
     fasta="16s.trim.contigs.good.good.align", 
