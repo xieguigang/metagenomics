@@ -7,6 +7,9 @@ const src as string = ?"--src" || stop("a source data directory path must be pro
 [@info "number of threads that will be used for running parallel task."]
 const num_threads as integer = ?"--num_threads" || 32;
 
+[@info "file path to the mothur program executable file."]
+const mothur as string = ?"--mothur" || "/opt/metagenomics/mothur/mothur";
+
 [@info "the reference OTU sequnece database for run taxonomy
         annotation of the OTU contigs which is generated from
         the mothur software. this database file can be download
@@ -21,21 +24,29 @@ if (!dir.exists(src)) {
     setwd(src);
 }
 
+options(mothur = mothur);
+
 print("get greengenes reference database:");
 str(refalign);
 
 # generate file: ./16s.files
 Metagenomics::mothur_files(getwd(), "16s.files");
 
-make.contigs(file="./16s.files", processors=num_threads);
-screen.seqs(
-    fasta="16s.trim.contigs.fasta", 
-    minlength=200, 
-    maxlength=450, 
-    maxambig=0, 
-    group="16s.contigs.groups", 
-    processors=num_threads
+# make.contigs
+runMothur(
+    command = "make.contigs",
+    argv    = list(
+        file       = "16s.files", 
+        processors = num_threads
+    ),
+    log     = "[1]make.contigs.txt"
 );
+
+screen.seqs(
+    contigs="16s.trim.contigs.fasta", 
+    num_threads=num_threads
+);
+stop();
 align.seqs(
     candidate="16s.trim.contigs.good.fasta", 
     template=refalign$greengenes
