@@ -18,14 +18,14 @@ const refalign = greengenes_opts(greengenes);
 if (!dir.exists(src)) {
     stop(`invalid data source folder path [${src}]!`);
 } else {
-    setwd([src = normalizePath(src)]);
+    setwd(src);
 }
 
 print("get greengenes reference database:");
 str(refalign);
 
 # generate file: ./16s.files
-Metagenomics::mothur_files(src, "16s.files");
+Metagenomics::mothur_files(getwd(), "16s.files");
 
 make.contigs(file="./16s.files", processors=num_threads);
 screen.seqs(
