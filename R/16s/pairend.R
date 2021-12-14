@@ -43,7 +43,7 @@ const mothur_files as function(dir, filename = "16s.files") {
     sample_id = make.names(sample_id);
     (1:length(sample_id))
     |> sapply(function(i) {
-        sprintf("%s\t%s\t%s", sample_id[i], R1[i], R2[i]);
+        sprintf("%s\t%s%s.fq\t%s%s.fq", sample_id[i], dir, R1[i], dir, R2[i]);
     })
     |> writeLines(con = file.path(dir, filename))
     ;
