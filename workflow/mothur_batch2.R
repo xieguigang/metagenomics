@@ -1,4 +1,7 @@
 require(Metagenomics);
+require(GCModeller);
+
+imports "taxonomy_kit" from "metagenomics_kit";
 
 [@info "A source data directory which contains *.fq raw data files."]
 [@type "directory"]
@@ -114,16 +117,30 @@ if (!check_filecache("16s.trim.contigs.good.good.gg.knn.taxonomy")) {
     );
 }
 
-summary.tax(
-    taxonomy="16s.trim.contigs.good.good.gg.knn.taxonomy", 
-    group="16s.contigs.good.good.groups"
-);
+if (!check_filecache("16s.trim.contigs.good.good.gg.knn.tax.summary")) {
+    summary.tax(
+        taxonomy="16s.trim.contigs.good.good.gg.knn.taxonomy", 
+        group="16s.contigs.good.good.groups"
+    );
 
-split.groups(
-    fasta="16s.trim.contigs.good.fasta", 
-    group="16s.contigs.good.groups"
-);
+    split.groups(
+        fasta="16s.trim.contigs.good.fasta", 
+        group="16s.contigs.good.groups"
+    );
+}
 
 # result file
 # 16s.trim.contigs.good.good.gg.knn.tax.summary
 #  -> 16s_results.summary
+
+const file = "./16s.trim.contigs.good.good.gg.knn.tax.summary";
+const tree = taxonomy_kit::read.mothurTree(file);
+const OTU = tree 
+|> as.OTU_table() 
+|> as.data.frame()
+;
+
+print("get the final OTU table result:");
+str(OTU);
+
+write.csv(OTU, file = "./mothur_OTU_table.csv", row.names = FALSE);
