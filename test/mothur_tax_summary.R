@@ -11,4 +11,4 @@ OTU = tree
 
 print(OTU, max.print = 10);
 
-write.csv(OTU, file = "./mothur_OTU_table.csv");
+write.csv(OTU, file = "./mothur_OTU_table.csv", row.names = FALSE);
