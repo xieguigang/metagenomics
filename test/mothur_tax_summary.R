@@ -2,6 +2,8 @@ require(GCModeller);
 
 imports "taxonomy_kit" from "metagenomics_kit";
 
+setwd(@dir);
+
 file = "./16s_results.summary";
 tree = taxonomy_kit::read.mothurTree(file);
 OTU = tree 

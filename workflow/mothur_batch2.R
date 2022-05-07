@@ -55,7 +55,7 @@ print("data result files will be saved at:");
 print(work16s$outputdir);
 
 # generate file: ./16s.files
-Metagenomics::mothur_files(getwd(), file.path(outputdir, "16s.files"));
+const getSample_id = Metagenomics::mothur_files(getwd(), file.path(outputdir, "16s.files"));
 
 setwd(work16s$outputdir);
 
@@ -139,6 +139,12 @@ const OTU = tree
 |> as.OTU_table() 
 |> as.data.frame()
 ;
+
+if ((length(getSample_id) == 1) && ("total" in colnames(OTU))) {
+    v = OTU[, "total"];
+    OTU[, "total"] = NULL;
+    OTU[, getSample_id] = v;
+}
 
 print("parse mothur result file:");
 print(normalizePath(file));

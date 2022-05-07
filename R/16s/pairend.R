@@ -1,5 +1,10 @@
-const pairEnds as function(dir) {
-    files = dir
+
+#' load pair-end file list
+#' 
+const pairEnds = function(dir) {
+    print("scan the fastq raw data files...");
+
+    const files = dir
     |> list.files(pattern = "*.fq")
     |> groupBy(function(path) {
         basename(path) 
@@ -28,12 +33,14 @@ const pairEnds as function(dir) {
 #' 
 #' @param dir a directory path which contains the 
 #'    ``R1/R2`` pair-end fastq sequence file.
+#' @param filename the file name to save as the 16s
+#'    file list.
 #' 
-const mothur_files as function(dir, filename = "./16s.files") {
-    print("scan the fastq raw data files...");
-
-    # load pair-end file list
-    files = pairEnds(dir);
+#' @return a character vector of the sample id in the 
+#'    given data directory.
+#' 
+const mothur_files = function(dir, filename = "./16s.files") {
+    const files = pairEnds(dir);
     # write raw data sequence file inputs
     # at here
     print(files, max.print = 10);
@@ -41,6 +48,8 @@ const mothur_files as function(dir, filename = "./16s.files") {
     [sample_id, R1, R2] = files;
 
     sample_id = make.names(sample_id);
+    
+    # save files for mothur raw data input
     (1:length(sample_id))
     |> sapply(function(i) {
         sprintf("%s\t%s/%s.fq\t%s/%s.fq", sample_id[i], dir, R1[i], dir, R2[i]);
@@ -48,5 +57,5 @@ const mothur_files as function(dir, filename = "./16s.files") {
     |> writeLines(con = filename)
     ;
 
-    invisible(NULL);
+    sample_id;
 }
