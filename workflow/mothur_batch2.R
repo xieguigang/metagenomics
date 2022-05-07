@@ -141,7 +141,7 @@ const OTU = tree
 ;
 
 print("parse mothur result file:");
-print(file);
+print(normalizePath(file));
 print("get the final OTU table result:");
 str(OTU);
 
