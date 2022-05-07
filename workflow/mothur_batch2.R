@@ -140,6 +140,8 @@ const OTU = tree
 |> as.data.frame()
 ;
 
+print("parse mothur result file:");
+print(file);
 print("get the final OTU table result:");
 str(OTU);
 
