@@ -404,7 +404,9 @@ const classify.seqs as function(
     );
 }
 
-#' The summary.tax command reads a taxonomy file and 
+#' taxonomy summary of the annotation
+#' 
+#' @details The summary.tax command reads a taxonomy file and 
 #' an optional name and or group file, and summarizes 
 #' the taxonomy information.
 #' 
