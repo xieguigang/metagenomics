@@ -1,8 +1,6 @@
 require(Metagenomics);
 require(GCModeller);
 
-imports "taxonomy_kit" from "metagenomics_kit";
-
 [@info "A source data directory which contains *.fq raw data files."]
 [@type "directory"]
 const src as string = ?"--src" || stop("a source data directory path must be provided!");

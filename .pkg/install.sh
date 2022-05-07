@@ -5,5 +5,6 @@
 /bin/cp -rf ./mothur_batch2.R /usr/local/bin/
 
 # install package
+R# --install.packages ./REnv.zip
 R# --install.packages ./metagenomics.zip
-R# --install.packages ./GCModeller_1.1.0-beta.zip
+R# --install.packages ./GCModeller-net5.0.zip
