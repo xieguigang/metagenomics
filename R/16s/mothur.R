@@ -419,11 +419,13 @@ const summary.tax as function(taxonomy, group, logfile = "[15]summary.tax.txt") 
     );
 }
 
-#' The split.groups command reads a list, fasta, flow or 
+#' count for groups
+#' 
+#' @details The split.groups command reads a list, fasta, flow or 
 #' fastq file and count and generates a list, fasta, flow 
 #' or fastq files for each group in the count file.
 #' 
-const split.groups as function(fasta, group, logfile = "[16]split.groups.txt") {
+const split.groups = function(fasta, group, logfile = "[16]split.groups.txt") {
     runMothur(
         command = "split.groups",
         argv    = list(

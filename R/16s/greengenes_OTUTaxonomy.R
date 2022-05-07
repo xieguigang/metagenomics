@@ -13,16 +13,16 @@
 #'    from the mothur program. About the parameter usage notes, reference to
 #'    the ``make.contigs`` function.
 #' 
-const greengenes_OTUTaxonomy as function(left, right,
-                                         outputdir    = "./",
-                                         num_threads  = 32,
-                                         evalue       = 1e-10,
-                                         make.contigs = list(
-                                             algorithm = "needleman", 
-                                             score     = [1.0, -1.0, -2.0, -1.0],
-                                             insert    = 20
-                                         ), 
-                                         skip_mothur  = FALSE) {
+const greengenes_OTUTaxonomy = function(left, right,
+                                        outputdir    = "./",
+                                        num_threads  = 32,
+                                        evalue       = 1e-10,
+                                        make.contigs = list(
+                                            algorithm = "needleman", 
+                                            score     = [1.0, -1.0, -2.0, -1.0],
+                                            insert    = 20
+                                        ), 
+                                        skip_mothur  = FALSE) {
 
     const is_debug as boolean  = getOption("workflow.debug");
     const blastn as string = getOption("ncbi_blast");
@@ -91,7 +91,7 @@ const greengenes_OTUTaxonomy as function(left, right,
 #'    2. taxonomy: is the file path of the taxonomy data for
 #'                 the data annotation of the OTU sequence
 #'
-const greengenes_opts as function(greengenes as string = getOption("greengenes")) {
+const greengenes_opts = function(greengenes as string = getOption("greengenes")) {
     const name as string       = basename(greengenes, withExtensionName = TRUE);
     const parts as string      = strsplit(name, "+", fixed = TRUE);
     const repository as string = dirname(greengenes);
