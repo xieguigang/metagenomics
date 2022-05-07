@@ -33,11 +33,11 @@
 #'    base has a quality score below the threshold we eliminate it. 
 #'    Default=20.
 #' 
-const make.contigs as function(left, right, 
-                               algorithm   = ["needleman", "gotoh"], 
-                               score       = [1.0, -1.0, -2.0, -1.0],
-                               insert      = 20,  
-                               num_threads = 8) {
+const make.contigs = function(left, right, 
+                              algorithm   = ["needleman", "gotoh"], 
+                              score       = [1.0, -1.0, -2.0, -1.0],
+                              insert      = 20,  
+                              num_threads = 8) {
 
     # write raw data sequence file inputs
     # at here
@@ -79,7 +79,7 @@ const make.contigs as function(left, right,
 #' 
 #' @return the parameter value comes from the ``contig.fasta`` parameter.
 #'
-const write_contig as function(seqfile, contig.fasta = "contig.fasta") {
+const write_contig = function(seqfile, contig.fasta = "contig.fasta") {
     if (file.exists(contig.fasta)) {
         print(`${contig.fasta} is already exists, going to remove it...`);
         unlink(contig.fasta);
@@ -109,9 +109,9 @@ const write_contig as function(seqfile, contig.fasta = "contig.fasta") {
 #' summary process by using multiple processors. Default processors=Autodetect
 #' number of available processors and use all available.
 #'
-const summary.seqs as function(seqfile, count_table,
-                               num_threads = 8,
-                               logfile     = "log.txt") {
+const summary.seqs = function(seqfile, count_table,
+                              num_threads = 8,
+                              logfile     = "log.txt") {
 
     runMothur(
         command = "summary.seqs",
@@ -127,7 +127,7 @@ const summary.seqs as function(seqfile, count_table,
 #' cull those sequences not meeting the criteria from a names, group,
 #' contigsreport, alignreport and summary file.
 #'
-const screen.seqs as function(contigs, num_threads = 8) {
+const screen.seqs = function(contigs, num_threads = 8) {
     using workdir as workdir(dirname(contigs)) {
         const file as string = "[2]summary.seqs.txt";
         const summary = list(min = 0, max = 0);
@@ -187,7 +187,7 @@ const screen.seqs as function(contigs, num_threads = 8) {
 #' sequences. It sucks up considerable processing time to have to align,
 #' calculate distances, and cluster each of these sequences individually.
 #'
-const unique.seqs as function(contigs, logfile = "[4]unique.seqs.txt") {
+const unique.seqs = function(contigs, logfile = "[4]unique.seqs.txt") {
     using workdir as workdir(dirname(contigs)) {
         runMothur(
             command = "unique.seqs",
@@ -203,7 +203,7 @@ const unique.seqs as function(contigs, logfile = "[4]unique.seqs.txt") {
 #' represented by the representative sequence in a name file. If a group
 #' file is given, it will also provide the group count breakdown.
 #'
-const count.seqs as function(names, groups) {
+const count.seqs = function(names, groups) {
     runMothur(
         command = "count.seqs",
         argv    = list(name = names, group = groups),
@@ -232,10 +232,10 @@ const count.seqs as function(names, groups) {
 #' template database is based on the secondary structure, then the resulting
 #' alignment will at least be implicitly based on the secondary structure.
 #'
-const align.seqs as function(contigs, reference,
-                             flip        = "F",
-                             num_threads = 8,
-                             logfile     = "[7]align.seqs.txt") {
+const align.seqs = function(contigs, reference,
+                            flip        = "F",
+                            num_threads = 8,
+                            logfile     = "[7]align.seqs.txt") {
     runMothur(
         command = "align.seqs",
         argv    = list(
@@ -258,7 +258,7 @@ const align.seqs as function(contigs, reference,
 #' This type of masking is only encouraged for deep-level phylogenetic analysis, not
 #' fine level analysis such as that needed with calculating OTUs.
 #'
-const filter.seqs as function(align, num_threads, logfile = "[8]filter.seqs.txt") {
+const filter.seqs = function(align, num_threads, logfile = "[8]filter.seqs.txt") {
     runMothur(
         command = "filter.seqs",
         argv    = list(
@@ -269,13 +269,18 @@ const filter.seqs as function(align, num_threads, logfile = "[8]filter.seqs.txt"
     );
 }
 
-#' The dist.seqs command will calculate uncorrected pairwise distances between aligned
-#' DNA sequences. This approach is better than the commonly used DNADIST because the
-#' distances are not stored in RAM, rather they are printed directly to a file.
-#' Furthermore, it is possible to ignore “large” distances that one might not be interested
-#' in. The command will generate a column-formatted distance matrix that is compatible
-#' with the column option in the various cluster commands. The command is also able to
-#' generate a phylip-formatted distance matrix.
+#' create sequence distance matrix
+#' 
+#' @details The dist.seqs command will calculate uncorrected pairwise 
+#' distances between aligned DNA sequences. This approach is better 
+#' than the commonly used DNADIST because the distances are not stored 
+#' in RAM, rather they are printed directly to a file.
+#' 
+#' Furthermore, it is possible to ignore “large” distances that one 
+#' might not be interested in. The command will generate a column-formatted 
+#' distance matrix that is compatible with the column option in the 
+#' various cluster commands. The command is also able to generate a 
+#' phylip-formatted distance matrix.
 #'
 const dist.seqs as function(align_fasta,
                             calc        = "onegap",
@@ -338,11 +343,14 @@ const cluster as function(dist,
     );
 }
 
-#' ``bin.seqs`` prints out a fasta-formatted file where sequences are ordered according
-#' to the OTU that they belong to. Such an output may be helpful for generating primers
-#' specific to an OTU or for classification of sequences.
+#' 
+#' 
+#' @details ``bin.seqs`` prints out a fasta-formatted file where 
+#' sequences are ordered according to the OTU that they belong to.
+#' Such an output may be helpful for generating primers specific 
+#' to an OTU or for classification of sequences.
 #'
-const bin.seqs as function(list, contigs, contig.names, logfile = "[12]bin.seqs.txt") {
+const bin.seqs = function(list, contigs, contig.names, logfile = "[12]bin.seqs.txt") {
     runMothur(
         command = "bin.seqs",
         argv    = list(list = list, fasta = contigs, name = contig.names),
@@ -350,9 +358,12 @@ const bin.seqs as function(list, contigs, contig.names, logfile = "[12]bin.seqs.
     );
 }
 
-#' While the bin.seqs command reports the OTU number for all sequences, the ``get.oturep``
-#' command generates a fasta-formatted sequence file containing only a representative sequence
-#' for each OTU. A .rep.fasta and .rep.name file or .rep.count_table file is generated
+#' Get the representative sequence
+#' 
+#' @details While the ``bin.seqs`` command reports the OTU number for 
+#' all sequences, the ``get.oturep`` command generates a fasta-formatted 
+#' sequence file containing only a representative sequence for each OTU. 
+#' A .rep.fasta and .rep.name file or .rep.count_table file is generated
 #' for each OTU definition.
 #'
 const get.oturep as function(dist, contig.unique.fasta, list,
@@ -370,7 +381,9 @@ const get.oturep as function(dist, contig.unique.fasta, list,
     );
 }
 
-#' The classify.seqs command allows the user to use 
+#' Do OTU annotation based on the reference database
+#' 
+#' @details The classify.seqs command allows the user to use 
 #' several different methods to assign their sequences 
 #' to the taxonomy outline of their choice. Current 
 #' methods include the Wang approach, using a k-nearest 
@@ -381,7 +394,7 @@ const get.oturep as function(dist, contig.unique.fasta, list,
 #' sequence file and a taxonomy file for the reference 
 #' sequences.
 #' 
-const classify.seqs as function(
+const classify.seqs = function(
     fasta, 
     reference, 
     taxonomy, 
@@ -410,7 +423,7 @@ const classify.seqs as function(
 #' an optional name and or group file, and summarizes 
 #' the taxonomy information.
 #' 
-const summary.tax as function(taxonomy, group, logfile = "[15]summary.tax.txt") {
+const summary.tax = function(taxonomy, group, logfile = "[15]summary.tax.txt") {
     runMothur(
         command = "summary.tax",
         argv    = list(
