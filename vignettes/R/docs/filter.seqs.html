@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title><p>filter.seqs removes columns from alignments based on a criteria defined by the user. For example, alignments generated against reference alignments (e.g. from RDP, SILVA, or greengenes) often have columns where every character is either a ‘.’ or a ‘-‘. These columns are not included in calculating distances because they have no information in them. By removing these columns, the calculation of a large number of distances is accelerated. Also, people also like to mask their sequences to remove variable regions using a soft or hard mask (e.g. Lane’s mask). This type of masking is only encouraged for deep-level phylogenetic analysis, not fine level analysis such as that needed with calculating OTUs.</p></title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+    <link rel="stylesheet" type="text/css" href="../../_assets/page.css">
+</head>
+
+<body>
+    <div class="container">
+
+        <table style="width: 100%;">
+            <tr>
+                <td>filter.seqs {Metagenomics}</td>
+                <td style="text-align: right;">R Documentation</td>
+            </tr>
+        </table>
+
+        <h2><p>filter.seqs removes columns from alignments based on a criteria defined by the user. For example, alignments generated against reference alignments (e.g. from RDP, SILVA, or greengenes) often have columns where every character is either a ‘.’ or a ‘-‘. These columns are not included in calculating distances because they have no information in them. By removing these columns, the calculation of a large number of distances is accelerated. Also, people also like to mask their sequences to remove variable regions using a soft or hard mask (e.g. Lane’s mask). This type of masking is only encouraged for deep-level phylogenetic analysis, not fine level analysis such as that needed with calculating OTUs.</p></h2>
+
+        <h3>Description</h3>
+
+        
+
+        <h3>Usage</h3>
+
+        <div style="width: 100%; padding-left: 3%; color: black;">
+            <pre><code class='language-R' style="color: black; font-weight:normal;"><strong>filter.seqs</strong>(<i>align</i>, <i>num.threads</i>,
+    <i>logfile</i> = [8]filter.seqs.txt);</code></pre>
+        </div>
+
+        <h3>Arguments</h3>
+
+        <table>
+            
+        </table>
+
+
+        <h3 style="display: none;">Details</h3>
+
+        
+
+        <h3 style="display: block">Authors</h3>
+
+        xieguigang &lt;xie.guigang@gcmodeller.org>
+
+        <h3>Value</h3>
+
+        This function has no value returns.
+
+        <h3 style="display: none;">Examples</h3>
+
+        
+
+        <hr />
+        <div style="text-align: center;">[Package <em>Metagenomics</em> version 0.1.0 <a
+                href="../Metagenomics.html">Index</a>]
+        </div>
+    </div>
+</body>
+
+<script type="text/javascript" src="../../_assets/R_syntax.js"></script>
+<script type="text/javascript" src="../../_assets/highlights.js"></script>
+<script type="text/javascript">r_highlights("example_r");</script>
+
+</html>

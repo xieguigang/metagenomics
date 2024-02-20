@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title><p>The <code>make.contigs</code> command reads a forward fastq file and a reverse fastq file and outputs new fasta and report files.</p></title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+    <link rel="stylesheet" type="text/css" href="../../_assets/page.css">
+</head>
+
+<body>
+    <div class="container">
+
+        <table style="width: 100%;">
+            <tr>
+                <td>make.contigs {Metagenomics}</td>
+                <td style="text-align: right;">R Documentation</td>
+            </tr>
+        </table>
+
+        <h2><p>The <code>make.contigs</code> command reads a forward fastq file and a reverse fastq file and outputs new fasta and report files.</p></h2>
+
+        <h3>Description</h3>
+
+        
+
+        <h3>Usage</h3>
+
+        <div style="width: 100%; padding-left: 3%; color: black;">
+            <pre><code class='language-R' style="color: black; font-weight:normal;"><strong>make.contigs</strong>(<i>left</i>, <i>right</i>,
+    <i>algorithm</i> = [needleman, gotoh],
+    <i>score</i> = [1, -1, -2, -1],
+    <i>insert</i> = <span style='color: green;'>20</span>,
+    <i>num.threads</i> = <span style='color: green;'>8</span>);</code></pre>
+        </div>
+
+        <h3>Arguments</h3>
+
+        <table>
+            
+<dt>algorithm</dt>
+<dd><p><p>[align] The align parameter allows you to specify the alignment method to use. Your options are: gotoh and needleman. The default is needleman.</p></p></dd>
+
+
+<dt>score</dt>
+<dd><p><p>[match &amp; mismatch &amp; gapopen &amp; gapextend] These parameters are used while aligning the sequence read to determine the overlap. The match parameter allows you to specify the bonus for having the same base. The default is 1.0. The mistmatch parameter allows you to specify the penalty for having different bases. The default is -1.0. The gapopen parameter allows you to specify the penalty for opening a gap in an alignment. The default is -2.0. The gapextend parameter allows you to specify the penalty for extending a gap in an alignment. The default is -1.0.</p></p></dd>
+
+
+<dt>insert</dt>
+<dd><p><p>The insert parameter allows you to set a quality scores threshold. When we are merging the overlapping regions, in the case where we are trying to decide whether to keep a base or remove it because the base is compared to a gap in the other fragment, if the base has a quality score below the threshold we eliminate it. Default=20.</p></p></dd>
+
+        </table>
+
+
+        <h3 style="display: block;">Details</h3>
+
+        <p>The make.contigs command parameters are file, ffastq, rfastq, ffasta, rfasta, fqfile, rqfile, findex, rindex, oligos, format, tdiffs, bdiffs, pdiffs, align, match, mismatch, gapopen, gapextend, insert, deltaq, maxee, allfiles and processors. Here we create a combo file for given input data to mothur: the 3 column format is used for datasets where the sequences have already had the barcodes and primers removed and been split into separate files. The first column is the group, the second is the forward fastq and the third column contains the reverse fastq.</p>
+
+        <h3 style="display: block">Authors</h3>
+
+        xieguigang &lt;xie.guigang@gcmodeller.org>
+
+        <h3>Value</h3>
+
+        This function has no value returns.
+
+        <h3 style="display: none;">Examples</h3>
+
+        
+
+        <hr />
+        <div style="text-align: center;">[Package <em>Metagenomics</em> version 0.1.0 <a
+                href="../Metagenomics.html">Index</a>]
+        </div>
+    </div>
+</body>
+
+<script type="text/javascript" src="../../_assets/R_syntax.js"></script>
+<script type="text/javascript" src="../../_assets/highlights.js"></script>
+<script type="text/javascript">r_highlights("example_r");</script>
+
+</html>

@@ -1,8 +1,16 @@
-﻿.TH MAKE.CONTIGS 1 2022-05-07 "" "The ``make.contigs`` command reads a forward fastq file and a reverse fastq file and outputs new fasta and report files."
+﻿.TH MAKE.CONTIGS 1 2024-Feb "" "The ``make.contigs`` command reads a forward fastq file and a reverse fastq file and outputs new fasta and report files."
 .SH NAME
-make.contigs \- make.contigs(left, right, algorithm = [needleman, gotoh], score = [1, -1, -2, -1], insert = 20, num_threads = 8)
+make.contigs \- make.contigs(left, right,
+    <i>algorithm</i> = [needleman, gotoh],
+    <i>score</i> = [1, -1, -2, -1],
+    <i>insert</i> = <span style='color: green;'>20</span>,
+    <i>num.threads</i> = <span style='color: green;'>8</span>)
 .SH SYNOPSIS
-\fImake.contigs(left, right, algorithm = [needleman, gotoh], score = [1, -1, -2, -1], insert = 20, num_threads = 8)\fR
+\fImake.contigs(left, right,
+    <i>algorithm</i> = [needleman, gotoh],
+    <i>score</i> = [1, -1, -2, -1],
+    <i>insert</i> = <span style='color: green;'>20</span>,
+    <i>num.threads</i> = <span style='color: green;'>8</span>)\fR
 .SH OPTIONS
 .PP
 \fBleft\fB \fR\- . 
@@ -20,7 +28,7 @@ make.contigs \- make.contigs(left, right, algorithm = [needleman, gotoh], score 
 \fBinsert\fB \fR\- 20. The insert parameter allows you to set a quality scores threshold. When we are merging the overlapping regions, in the case where we are trying to decide whether to keep a base or remove it because the base is compared to a gap in the other fragment, if the base has a quality score below the threshold we eliminate it. Default=20.
 .PP
 .PP
-\fBnum_threads\fB \fR\- 8. 
+\fBnum.threads\fB \fR\- 8. 
 .PP
 .SH DETAILS
 .PP
@@ -31,4 +39,4 @@ The make.contigs command parameters are file, ffastq, rfastq, ffasta, rfasta, fq
 SMRUCC/R#.declare_function.make.contigs at mothur.R:line 36
 .PP
 .SH COPYRIGHT
-Copyright © xieguigang <xie.guigang@gcmodeller.org>, MIT Licensed 2022
+Copyright © xieguigang <xie.guigang@gcmodeller.org>, MIT Licensed 2024

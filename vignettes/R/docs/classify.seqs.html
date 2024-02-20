@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title><p>Do OTU annotation based on the reference database</p></title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+    <link rel="stylesheet" type="text/css" href="../../_assets/page.css">
+</head>
+
+<body>
+    <div class="container">
+
+        <table style="width: 100%;">
+            <tr>
+                <td>classify.seqs {Metagenomics}</td>
+                <td style="text-align: right;">R Documentation</td>
+            </tr>
+        </table>
+
+        <h2><p>Do OTU annotation based on the reference database</p></h2>
+
+        <h3>Description</h3>
+
+        
+
+        <h3>Usage</h3>
+
+        <div style="width: 100%; padding-left: 3%; color: black;">
+            <pre><code class='language-R' style="color: black; font-weight:normal;"><strong>classify.seqs</strong>(<i>fasta</i>, <i>reference</i>, <i>taxonomy</i>,
+    <i>method</i> = knn,
+    <i>numwanted</i> = <span style='color: green;'>3</span>,
+    <i>processors</i> = <span style='color: green;'>2</span>,
+    <i>logfile</i> = [14]classify.seqs.txt);</code></pre>
+        </div>
+
+        <h3>Arguments</h3>
+
+        <table>
+            
+        </table>
+
+
+        <h3 style="display: block;">Details</h3>
+
+        <p>The classify.seqs command allows the user to use several different methods to assign their sequences to the taxonomy outline of their choice. Current methods include the Wang approach, using a k-nearest neighbor consensus and zap. Taxonomy outlines and reference sequences can be obtained from the taxonomy outline page. The command requires that you provide a fasta-formatted input and database sequence file and a taxonomy file for the reference sequences.</p>
+
+        <h3 style="display: block">Authors</h3>
+
+        xieguigang &lt;xie.guigang@gcmodeller.org>
+
+        <h3>Value</h3>
+
+        This function has no value returns.
+
+        <h3 style="display: none;">Examples</h3>
+
+        
+
+        <hr />
+        <div style="text-align: center;">[Package <em>Metagenomics</em> version 0.1.0 <a
+                href="../Metagenomics.html">Index</a>]
+        </div>
+    </div>
+</body>
+
+<script type="text/javascript" src="../../_assets/R_syntax.js"></script>
+<script type="text/javascript" src="../../_assets/highlights.js"></script>
+<script type="text/javascript">r_highlights("example_r");</script>
+
+</html>

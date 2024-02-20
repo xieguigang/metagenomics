@@ -1,8 +1,12 @@
-﻿.TH ALIGN_GREENGENES 1 2022-05-07 "" "Align greengenes database for taxonomy annotation"
+﻿.TH ALIGN_GREENGENES 1 2024-Feb "" "Align greengenes database for taxonomy annotation"
 .SH NAME
-align_greengenes \- align_greengenes(work16s, blastn = getOption(ncbi_blast), is_debug = getOption(workflow.debug))
+align_greengenes \- align_greengenes(work16s,
+    <i>blastn</i> = getOption(ncbi_blast),
+    <i>is.debug</i> = getOption(workflow.debug))
 .SH SYNOPSIS
-\fIalign_greengenes(work16s, blastn = getOption(ncbi_blast), is_debug = getOption(workflow.debug))\fR
+\fIalign_greengenes(work16s,
+    <i>blastn</i> = getOption(ncbi_blast),
+    <i>is.debug</i> = getOption(workflow.debug))\fR
 .SH OPTIONS
 .PP
 \fBwork16s\fB \fR\- . the workspace object which is comes from the ``greengenes_OTUTaxonomy`` function.
@@ -11,11 +15,11 @@ align_greengenes \- align_greengenes(work16s, blastn = getOption(ncbi_blast), is
 \fBblastn\fB \fR\- getOption(ncbi_blast). the executable file path of the NCBI blastn program.
 .PP
 .PP
-\fBis_debug\fB \fR\- getOption(workflow.debug). run in debug mode?
+\fBis.debug\fB \fR\- getOption(workflow.debug). 
 .PP
 .SH FILES
 .PP
 SMRUCC/R#.declare_function.align_greengenes at taxonomy.R:line 15
 .PP
 .SH COPYRIGHT
-Copyright © xieguigang <xie.guigang@gcmodeller.org>, MIT Licensed 2022
+Copyright © xieguigang <xie.guigang@gcmodeller.org>, MIT Licensed 2024

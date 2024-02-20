@@ -1,8 +1,14 @@
-﻿.TH MOTHUR_OTU 1 2022-05-07 "" "Build OTU based on mothur"
+﻿.TH MOTHUR_OTU 1 2024-Feb "" "Build OTU based on mothur"
 .SH NAME
-mothur_OTU \- mothur_OTU(left, right, refalign, outputdir = ./, assembler = list(algorithm = needleman, score = [1, -1, -2, -1], insert = 20), num_threads = 32)
+mothur_OTU \- mothur_OTU(left, right, refalign,
+    <i>outputdir</i> = ./,
+    <i>assembler</i> = list(algorithm = needleman, score = [1, -1, -2, -1], insert = 20),
+    <i>num.threads</i> = <span style='color: green;'>32</span>)
 .SH SYNOPSIS
-\fImothur_OTU(left, right, refalign, outputdir = ./, assembler = list(algorithm = needleman, score = [1, -1, -2, -1], insert = 20), num_threads = 32)\fR
+\fImothur_OTU(left, right, refalign,
+    <i>outputdir</i> = ./,
+    <i>assembler</i> = list(algorithm = needleman, score = [1, -1, -2, -1], insert = 20),
+    <i>num.threads</i> = <span style='color: green;'>32</span>)\fR
 .SH OPTIONS
 .PP
 \fBleft\fB \fR\- . the left paired-end sequence file.
@@ -20,11 +26,11 @@ mothur_OTU \- mothur_OTU(left, right, refalign, outputdir = ./, assembler = list
 \fBassembler\fB \fR\- list(algorithm = needleman, score = [1, -1, -2, -1], insert = 20). 
 .PP
 .PP
-\fBnum_threads\fB \fR\- 32. the number of the processor threads that will be used in the mothur software.
+\fBnum.threads\fB \fR\- 32. 
 .PP
 .SH FILES
 .PP
 SMRUCC/R#.declare_function.mothur_OTU at mothur_OTU.R:line 10
 .PP
 .SH COPYRIGHT
-Copyright © xieguigang <xie.guigang@gcmodeller.org>, MIT Licensed 2022
+Copyright © xieguigang <xie.guigang@gcmodeller.org>, MIT Licensed 2024

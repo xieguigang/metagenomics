@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title><p>create sequence distance matrix</p></title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+    <link rel="stylesheet" type="text/css" href="../../_assets/page.css">
+</head>
+
+<body>
+    <div class="container">
+
+        <table style="width: 100%;">
+            <tr>
+                <td>dist.seqs {Metagenomics}</td>
+                <td style="text-align: right;">R Documentation</td>
+            </tr>
+        </table>
+
+        <h2><p>create sequence distance matrix</p></h2>
+
+        <h3>Description</h3>
+
+        
+
+        <h3>Usage</h3>
+
+        <div style="width: 100%; padding-left: 3%; color: black;">
+            <pre><code class='language-R' style="color: black; font-weight:normal;"><strong>dist.seqs</strong>(<i>align.fasta</i>,
+    <i>calc</i> = onegap,
+    <i>countends</i> = F,
+    <i>cutoff</i> = <span style='color: green;'>0.03</span>,
+    <i>output</i> = lt,
+    <i>num.threads</i> = <span style='color: green;'>32</span>,
+    <i>logfile</i> = [10]dist.seqs.txt);</code></pre>
+        </div>
+
+        <h3>Arguments</h3>
+
+        <table>
+            
+        </table>
+
+
+        <h3 style="display: block;">Details</h3>
+
+        <p>The dist.seqs command will calculate uncorrected pairwise distances between aligned DNA sequences. This approach is better than the commonly used DNADIST because the distances are not stored in RAM, rather they are printed directly to a file. Furthermore, it is possible to ignore “large” distances that one might not be interested in. The command will generate a column-formatted distance matrix that is compatible with the column option in the various cluster commands. The command is also able to generate a phylip-formatted distance matrix.</p>
+
+        <h3 style="display: block">Authors</h3>
+
+        xieguigang &lt;xie.guigang@gcmodeller.org>
+
+        <h3>Value</h3>
+
+        This function has no value returns.
+
+        <h3 style="display: none;">Examples</h3>
+
+        
+
+        <hr />
+        <div style="text-align: center;">[Package <em>Metagenomics</em> version 0.1.0 <a
+                href="../Metagenomics.html">Index</a>]
+        </div>
+    </div>
+</body>
+
+<script type="text/javascript" src="../../_assets/R_syntax.js"></script>
+<script type="text/javascript" src="../../_assets/highlights.js"></script>
+<script type="text/javascript">r_highlights("example_r");</script>
+
+</html>
