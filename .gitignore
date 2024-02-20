@@ -351,3 +351,14 @@ MigrationBackup/
 .Rproj.user
 .pkg/metagenomics.zip
 .pkg/aaa.zip
+data/citations.dmp
+data/delnodes.dmp
+data/division.dmp
+data/gc.prt
+data/gencode.dmp
+data/images.dmp
+data/merged.dmp
+data/names.dmp
+data/nodes.dmp
+data/readme.txt
+data/taxdmp_2024-02-01.zip
