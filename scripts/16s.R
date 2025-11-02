@@ -21,7 +21,7 @@ dir.create("16S_Results/Tables", showWarnings = FALSE)
 # 1. 数据导入与预处理
 # --------------------
 # 读取OTU表格
-otu_data <- read.csv("16s.csv", row.names = 1, check.names = FALSE)
+otu_data <- read.csv("GROUP2/phylum.csv", row.names = 1, check.names = FALSE)
 
 # 提取样本信息
 sample_data <- otu_data[, 1, drop = FALSE]
