@@ -60,6 +60,10 @@ tryCatch({
     stop("Column 'class' not found in the input data")
   }
   
+  for(name in colnames(otu_data)) {
+    otu_data[,name] = as.integer(otu_data[,name]*10000)
+  }
+  
   # Create OTU matrix
   otu_matrix <- as.matrix(otu_data)
   
@@ -132,11 +136,13 @@ plot_composition <- function(ps, level, top_n = 15) {
   
   # Identify top taxa
   top_taxa <- df %>%
-    group_by_at(level) %>%
-    summarize(mean_abund = mean(Abundance)) %>%
+    group_by(across(all_of(level))) %>%
+    dplyr::summarize(mean_abund = mean(Abundance, na.rm = TRUE)) %>%
+    ungroup() %>%
     arrange(desc(mean_abund)) %>%
-    slice(1:top_n) %>%
-    pull(level)
+    mutate(rank = row_number()) %>%
+    filter(rank <= top_n) %>%
+    pull(!!sym(level))
   
   # Group low abundance taxa as "Other"
   df[[level]] <- ifelse(df[[level]] %in% top_taxa, as.character(df[[level]]), "Other")
@@ -231,6 +237,22 @@ generate_venn_diagram <- function(ps, min_abundance = 0) {
   }
   
   intersection_df <- do.call(rbind, intersection_stats)
+  
+  max_size = max(sapply(otu_lists, function(l)length(l)));
+  
+  for(name in names(otu_lists)) {
+    v = otu_lists[[name]];
+    
+    if (length(v) < max_size) {
+      v = append(v, rep("", times = max_size-length(v)));
+      otu_lists[[name]] = v;
+    }
+  }
+  
+  print("view of the data dumps:");
+  str(otu_lists)
+  print(intersection_df)
+  
   write.xlsx(list(OTU_Lists = otu_lists, Intersection_Stats = intersection_df),
              file = file.path(main_dir, "01_Community_Structure", "Venn_Analysis.xlsx"))
   
@@ -242,7 +264,7 @@ venn_results <- generate_venn_diagram(PS)
 # 1.3 Enhanced Heatmap Analysis
 generate_heatmap <- function(ps, level = "Genus", top_n = 30) {
   # Aggregate at specified taxonomic level
-  ps_glom <- tax_glom(ps, taxrank = level, NA.rm = TRUE)
+  ps_glom <- tax_glom(ps, taxrank = level)
   ps_rel <- transform_sample_counts(ps_glom, function(x) x / sum(x))
   
   # Get top abundant taxa
@@ -301,6 +323,8 @@ generate_heatmap(PS, "Genus", 30)
 
 # 2.1 Comprehensive Alpha Diversity Analysis
 analyze_alpha_diversity <- function(ps) {
+  print(ps);
+  
   # Calculate alpha diversity indices
   alpha_metrics <- c("Observed", "Chao1", "ACE", "Shannon", "Simpson", "InvSimpson", "Fisher")
   alpha_div <- estimate_richness(ps, measures = alpha_metrics)
@@ -320,13 +344,23 @@ analyze_alpha_diversity <- function(ps) {
   # Statistical testing
   alpha_stats <- list()
   for (metric in alpha_metrics) {
+    message(metric);
     # Kruskal-Wallis test
-    kruskal_test <- kruskal.test(alpha_div[[metric]] ~ alpha_div$Group)
-    alpha_stats[[metric]] <- data.frame(
-      Metric = metric,
-      Kruskal_Wallis_Statistic = kruskal_test$statistic,
-      Kruskal_Wallis_p_value = kruskal_test$p.value
-    )
+    v = alpha_div[[metric]]
+    if (all(is.nan(v))) {
+      alpha_stats[[metric]] <- data.frame(
+        Metric = metric,
+        Kruskal_Wallis_Statistic = NA,
+        Kruskal_Wallis_p_value = 1
+      )    
+    } else {
+      kruskal_test <- kruskal.test(alpha_div[[metric]] ~ alpha_div$Group)
+      alpha_stats[[metric]] <- data.frame(
+        Metric = metric,
+        Kruskal_Wallis_Statistic = kruskal_test$statistic,
+        Kruskal_Wallis_p_value = kruskal_test$p.value
+      )      
+    }
   }
   
   alpha_stats_df <- do.call(rbind, alpha_stats)
@@ -370,7 +404,7 @@ analyze_beta_diversity <- function(ps) {
   
   for (method in dist_methods) {
     tryCatch({
-      dist_matrices[[method]] <- distance(ps, method = method)
+      dist_matrices[[method]] <- phyloseq::distance(ps, method = method)
     }, error = function(e) {
       message("Could not calculate distance using method: ", method, ". Error: ", e$message)
     })
@@ -469,59 +503,153 @@ beta_results <- analyze_beta_diversity(PS)
 
 # --- 3. Enhanced Differential Abundance Analysis --- [2](@ref)
 
-# 3.1 ALDEx2 for Compositional Data Analysis [2](@ref)
-run_aldex2_analysis <- function(ps) {
-  # Extract data for ALDEx2
+# 3.1 ALDEx2 for Compositional Data Analysis
+run_aldex2_analysis <- function(ps, mc.samples = 128) {
+  # 提取数据
   otu_table_aldex <- t(otu_table(ps))
-  conditions <- sample_data(ps)$Group
+  conditions <- as.character(sample_data(ps)$Group)
   
-  # Run ALDEx2
-  aldex_obj <- aldex.clr(otu_table_aldex, conditions, mc.samples = 128, verbose = FALSE)
-  aldex_ttest <- aldex.ttest(aldex_obj, conditions)
-  aldex_effect <- aldex.effect(aldex_obj, conditions, include.sample.summary = TRUE)
+  # 获取所有唯一组别
+  unique_groups <- unique(conditions)
+  num_groups <- length(unique_groups)
   
-  # Combine results
-  aldex_results <- data.frame(
-    OTU = rownames(aldex_ttest),
-    we.ep = aldex_ttest$we.ep,
-    we.eBH = aldex_ttest$we.eBH,
-    wi.ep = aldex_ttest$wi.ep,
-    wi.eBH = aldex_ttest$wi.eBH,
-    effect = aldex_effect$effect,
-    diff.btw = aldex_effect$diff.btw,
-    diff.win = aldex_effect$diff.win
-  )
+  cat("检测到", num_groups, "个组别:", paste(unique_groups, collapse = ", "), "\n")
   
-  # Identify significant OTUs
-  aldex_results$Significant <- ifelse(aldex_results$we.eBH < 0.05 & abs(aldex_results$effect) > 1, 
-                                      "Yes", "No")
+  if (num_groups < 2) {
+    stop("需要至少2个组别进行比较")
+  }
   
-  # Add taxonomy information
-  tax_info <- as.data.frame(tax_table(ps))
-  tax_info$OTU <- rownames(tax_info)
-  aldex_results <- merge(aldex_results, tax_info, by = "OTU", all.x = TRUE)
+  # 运行ALDEx2 CLR转换
+  aldex_obj <- aldex.clr(otu_table_aldex, conditions, 
+                         mc.samples = mc.samples, 
+                         verbose = FALSE)
   
-  # Save results
-  write.xlsx(aldex_results, 
-             file = file.path(main_dir, "03_Differential_Analysis", "ALDEx2_Results.xlsx"))
+  results_list <- list()
   
-  # Create effect plot
-  p_effect <- ggplot(aldex_results, aes(x = diff.win, y = diff.btw, color = Significant)) +
-    geom_point(alpha = 0.6) +
-    scale_color_manual(values = c("Yes" = "red", "No" = "gray")) +
-    theme_bw() +
-    labs(title = "ALDEx2 Effect Plot",
-         x = "Dispersion", y = "Difference between groups")
+  if (num_groups == 2) {
+    # 两组比较：使用t检验和效应量
+    aldex_ttest <- aldex.ttest(aldex_obj, conditions)
+    aldex_effect <- aldex.effect(aldex_obj, conditions, 
+                                 include.sample.summary = FALSE)
+    aldex_results <- data.frame(aldex_ttest, aldex_effect)
+    
+    # 标识显著特征
+    sig_features <- which(aldex_results$we.eBH < 0.05 & abs(aldex_results$effect) > 1)
+    cat("发现", length(sig_features), "个显著差异特征\n")
+    
+    results_list[["All_Groups"]] <- aldex_results
+    
+  } else {
+    # 多组比较：使用Kruskal-Wallis检验
+    cat("进行多组Kruskal-Wallis检验\n")
+    aldex_kw <- aldex.kw(aldex_obj)
+    results_list[["Kruskal_Wallis"]] <- aldex_kw
+    
+    # 标识显著特征（基于Kruskal-Wallis检验）
+    sig_features <- which(aldex_kw$kw.eBH < 0.05)
+    cat("Kruskal-Wallis检验发现", length(sig_features), "个显著差异特征\n")
+    
+    # 进行两两比较
+    cat("进行两两组间比较\n")
+    pairwise_combinations <- combn(unique_groups, 2, simplify = FALSE)
+    
+    for (pair in pairwise_combinations) {
+      group1 <- pair[1]
+      group2 <- pair[2]
+      comparison_name <- paste(group1, "vs", group2, sep = "_")
+      
+      # 选择属于这两个组的样本
+      group1_samples <- which(conditions == group1)
+      group2_samples <- which(conditions == group2)
+      selected_samples <- c(group1_samples, group2_samples)
+      selected_conditions <- conditions[selected_samples]
+      
+      # 提取对应的OTU数据
+      selected_otu <- otu_table_aldex[selected_samples, ]
+      
+      # 运行两组比较
+      tryCatch({
+        aldex_pairwise <- aldex.clr(selected_otu, selected_conditions, 
+                                    mc.samples = mc.samples, 
+                                    verbose = FALSE)
+        aldex_ttest_pairwise <- aldex.ttest(aldex_pairwise, selected_conditions)
+        aldex_effect_pairwise <- aldex.effect(aldex_pairwise, selected_conditions, 
+                                              include.sample.summary = FALSE)
+        aldex_results_pairwise <- data.frame(aldex_ttest_pairwise, aldex_effect_pairwise)
+        
+        results_list[[comparison_name]] <- aldex_results_pairwise
+        
+        sig_pairwise <- which(aldex_results_pairwise$we.eBH < 0.05 & 
+                                abs(aldex_results_pairwise$effect) > 1)
+        cat("比较", comparison_name, "发现", length(sig_pairwise), "个显著差异特征\n")
+        
+      }, error = function(e) {
+        cat("比较", comparison_name, "时出错:", e$message, "\n")
+      })
+    }
+  }
   
-  ggsave(file.path(main_dir, "03_Differential_Analysis", "ALDEx2_Effect_Plot.pdf"), 
-         plot = p_effect, width = 8, height = 6)
-  ggsave(file.path(main_dir, "03_Differential_Analysis", "ALDEx2_Effect_Plot.png"), 
-         plot = p_effect, width = 8, height = 6, dpi = 300)
-  
-  return(aldex_results)
+  return(results_list)
 }
 
-aldex2_results <- run_aldex2_analysis(PS)
+# 执行ALDEx2分析
+tryCatch({
+  aldex2_results <- run_aldex2_analysis(PS, mc.samples = 128)
+  
+  # 保存结果
+  if (length(aldex2_results) > 0) {
+    write.xlsx(aldex2_results, 
+               file = file.path(main_dir, "03_Differential_Analysis", "ALDEx2_Results.xlsx"))
+    
+    # 生成摘要报告
+    summary_stats <- list()
+    for (result_name in names(aldex2_results)) {
+      result <- aldex2_results[[result_name]]
+      
+      if (grepl("vs", result_name)) {
+        # 两两比较结果
+        sig_count <- sum(result$we.eBH < 0.05 & abs(result$effect) > 1, na.rm = TRUE)
+        summary_stats[[result_name]] <- data.frame(
+          Comparison = result_name,
+          Significant_Features = sig_count,
+          Total_Features = nrow(result)
+        )
+      } else if (result_name == "Kruskal_Wallis") {
+        # Kruskal-Wallis结果
+        sig_count <- sum(result$kw.eBH < 0.05, na.rm = TRUE)
+        summary_stats[[result_name]] <- data.frame(
+          Comparison = "Kruskal_Wallis (Overall)",
+          Significant_Features = sig_count,
+          Total_Features = nrow(result)
+        )
+      }
+    }
+    
+    if (length(summary_stats) > 0) {
+      summary_df <- do.call(rbind, summary_stats)
+      write.xlsx(summary_df, 
+                 file = file.path(main_dir, "03_Differential_Analysis", "ALDEx2_Summary.xlsx"))
+      
+      # 绘制摘要图
+      p_summary <- ggplot(summary_df, aes(x = Comparison, y = Significant_Features, fill = Comparison)) +
+        geom_bar(stat = "identity") +
+        theme_bw() +
+        theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+        labs(title = "ALDEx2差异分析摘要", 
+             x = "比较组", y = "显著差异特征数量")
+      
+      ggsave(file.path(main_dir, "03_Differential_Analysis", "ALDEx2_Summary_Plot.pdf"), 
+             plot = p_summary, width = 10, height = 6)
+      ggsave(file.path(main_dir, "03_Differential_Analysis", "ALDEx2_Summary_Plot.png"), 
+             plot = p_summary, width = 10, height = 6, dpi = 300)
+    }
+    
+    cat("ALDEx2分析完成，结果已保存\n")
+  }
+  
+}, error = function(e) {
+  cat("ALDEx2分析失败:", e$message, "\n")
+})
 
 # 3.2 Enhanced Random Forest Analysis
 enhanced_random_forest <- function(ps, ntree = 1000) {
