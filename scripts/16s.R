@@ -21,7 +21,7 @@ dir.create("16S_Results/Tables", showWarnings = FALSE)
 # 1. 数据导入与预处理
 # --------------------
 # 读取OTU表格
-otu_data <- read.csv("GROUP2/phylum.csv", row.names = 1, check.names = FALSE)
+otu_data <- read.csv("GROUP2/species.csv", row.names = 1, check.names = FALSE)
 
 # 提取样本信息
 sample_data <- otu_data[, 1, drop = FALSE]
@@ -29,8 +29,14 @@ colnames(sample_data) <- "Group"
 sample_data$Sample <- rownames(sample_data)
 
 # 提取OTU矩阵
-otu_matrix <- as.matrix(otu_data[, -1])
-rownames(otu_matrix) <- rownames(otu_data)
+otu_matrix <- otu_data[, -1];
+
+for(name in colnames(otu_matrix)) {
+  otu_matrix[, name] = as.integer(otu_matrix[, name] * 1000);
+}
+
+otu_matrix = as.matrix(otu_matrix);
+rownames(otu_matrix) <- rownames(otu_data);
 
 # 解析物种注释信息
 taxa_names <- colnames(otu_matrix)
@@ -52,6 +58,8 @@ clean_tax <- function(x) {
 }
 tax_table[, -1] <- lapply(tax_table[, -1], clean_tax)
 rownames(tax_table) <- taxa_names
+
+print(tax_table)
 
 # 创建phyloseq对象
 OTU <- otu_table(otu_matrix, taxa_are_rows = FALSE)
