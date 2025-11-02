@@ -1,221 +1,225 @@
-# 加载必要的R包
-if (!requireNamespace("BiocManager", quietly = TRUE))
-  install.packages("BiocManager")
+# 加载必要的包
+library(phyloseq)
+library(vegan)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(microbiome)
+library(DESeq2)
+library(pheatmap)
+library(reshape2)
+library(openxlsx)
+library(multcomp)
+library(ggpubr)
+library(RColorBrewer)
 
-packages <- c("phyloseq", "vegan", "ggplot2", "dplyr", "tidyr", "microbiome", 
-              "pheatmap", "DESeq2", "cowplot", "RColorBrewer")
+# 创建输出目录
+dir.create("16S_Results", showWarnings = FALSE)
+dir.create("16S_Results/Plots", showWarnings = FALSE)
+dir.create("16S_Results/Tables", showWarnings = FALSE)
 
-for (pkg in packages) {
-  if (!requireNamespace(pkg, quietly = TRUE)) {
-    BiocManager::install(pkg)
-  }
-  library(pkg, character.only = TRUE)
-}
-
-# 1. 数据读取和预处理 ---------------------------------------------------------
+# 1. 数据导入与预处理
+# --------------------
 # 读取OTU表格
-otu_file <- "OTUTaxonAnalysis_20250307_63S.full.csv"
-otu_data <- read.csv(otu_file, stringsAsFactors = FALSE, check.names = FALSE)
+otu_data <- read.csv("16s.csv", row.names = 1, check.names = FALSE)
 
-# 提取样本丰度矩阵
-sample_cols <- grep("^S\\d+", colnames(otu_data), value = TRUE)
-otu_matrix <- as.matrix(otu_data[, sample_cols])
-rownames(otu_matrix) <- otu_data$otu
+# 提取样本信息
+sample_data <- otu_data[, 1, drop = FALSE]
+colnames(sample_data) <- "Group"
+sample_data$Sample <- rownames(sample_data)
 
-# 提取分类学表格
-tax_cols <- c("domain", "kingdom", "phylum", "class", "order", "family", "genus", "species")
-tax_table <- as.matrix(otu_data[, tax_cols])
-rownames(tax_table) <- otu_data$otu
+# 提取OTU矩阵
+otu_matrix <- as.matrix(otu_data[, -1])
+rownames(otu_matrix) <- rownames(otu_data)
 
-# 创建样本分组信息（根据描述修改）
-sampleinfo <- list(
-  group1 = c("S009", "S008"),
-  group2 = c("S0067"),
-  group3 = c()  # 如果有更多样本组，在此添加
-)
-
-# 创建样本元数据
-sample_data <- data.frame(
-  Sample = sample_cols,
+# 解析物种注释信息
+taxa_names <- colnames(otu_matrix)
+tax_table <- data.frame(
+  OTU = taxa_names,
+  Kingdom = sapply(strsplit(taxa_names, ";"), `[`, 1),
+  Phylum = sapply(strsplit(taxa_names, ";"), `[`, 2),
+  Class = sapply(strsplit(taxa_names, ";"), `[`, 3),
+  Order = sapply(strsplit(taxa_names, ";"), `[`, 4),
+  Family = sapply(strsplit(taxa_names, ";"), `[`, 5),
+  Genus = sapply(strsplit(taxa_names, ";"), `[`, 6),
+  Species = sapply(strsplit(taxa_names, ";"), `[`, 7),
   stringsAsFactors = FALSE
 )
 
-# 添加分组信息
-sample_data$Group <- NA
-for (group_name in names(sampleinfo)) {
-  sample_data$Group[sample_data$Sample %in% sampleinfo[[group_name]]] <- group_name
+# 清理分类信息
+clean_tax <- function(x) {
+  gsub("^[a-z]__", "", x)
 }
-
-# 移除没有分组信息的样本
-sample_data <- sample_data[!is.na(sample_data$Group), ]
-otu_matrix <- otu_matrix[, sample_data$Sample]
+tax_table[, -1] <- lapply(tax_table[, -1], clean_tax)
+rownames(tax_table) <- taxa_names
 
 # 创建phyloseq对象
-OTU <- otu_table(otu_matrix, taxa_are_rows = TRUE)
-TAX <- tax_table(tax_table)
+OTU <- otu_table(otu_matrix, taxa_are_rows = FALSE)
+TAX <- tax_table(as.matrix(tax_table))
 SAM <- sample_data(sample_data)
+physeq <- phyloseq(OTU, TAX, SAM)
 
-# 过滤低丰度OTU（至少在2个样本中出现且总丰度>5）
-keep_otu <- rowSums(OTU > 0) >= 2 & rowSums(OTU) > 5
-physeq <- phyloseq(OTU[keep_otu, ], TAX, SAM)
+# 过滤低丰度OTU (在至少20%样本中相对丰度>0.01%)
+physeq <- filter_taxa(physeq, function(x) sum(x > 0) > length(x)*0.2, TRUE)
 
-# 2. Alpha多样性分析 ---------------------------------------------------------
+# 2. Alpha多样性分析
+# --------------------
 # 计算多样性指数
 alpha_div <- estimate_richness(physeq, measures = c("Observed", "Shannon", "Simpson"))
-alpha_div$Sample <- rownames(alpha_div)
-alpha_div <- merge(alpha_div, as(sample_data, "data.frame"), by = "Sample")
+alpha_div$Group <- sample_data(physeq)$Group
+alpha_div$Sample <- sample_names(physeq)
 
-# 保存Alpha多样性结果
-write.csv(alpha_div, "alpha_diversity_results.csv", row.names = FALSE)
+# 保存表格
+write.xlsx(alpha_div, "16S_Results/Tables/Alpha_Diversity.xlsx")
 
-# 绘制Alpha多样性箱线图
-p_shannon <- ggplot(alpha_div, aes(x = Group, y = Shannon, fill = Group)) +
-  geom_boxplot() +
-  geom_jitter(width = 0.2, size = 2) +
-  theme_minimal() +
-  ggtitle("Shannon Diversity Index") +
-  ylab("Shannon Index")
+# 绘制多样性指数箱线图
+plot_alpha <- function(metric) {
+  ggplot(alpha_div, aes(x = Group, y = .data[[metric]], fill = Group)) +
+    geom_boxplot(alpha = 0.7) +
+    geom_jitter(width = 0.2, size = 2) +
+    stat_compare_means(method = "wilcox.test") +
+    labs(title = paste("Alpha Diversity:", metric),
+         y = metric,
+         x = "Group") +
+    theme_classic() +
+    scale_fill_brewer(palette = "Set2")
+}
 
-p_observed <- ggplot(alpha_div, aes(x = Group, y = Observed, fill = Group)) +
-  geom_boxplot() +
-  geom_jitter(width = 0.2, size = 2) +
-  theme_minimal() +
-  ggtitle("Observed OTUs") +
-  ylab("Number of OTUs")
+metrics <- c("Observed", "Shannon", "Simpson")
+lapply(metrics, function(m) {
+  p <- plot_alpha(m)
+  ggsave(paste0("16S_Results/Plots/Alpha_", m, ".png"), p, width = 8, height = 6, dpi = 300)
+  ggsave(paste0("16S_Results/Plots/Alpha_", m, ".pdf"), p, width = 8, height = 6)
+})
 
-# 保存Alpha多样性图
-ggsave("alpha_diversity_shannon.png", plot = p_shannon, width = 8, height = 6, dpi = 300)
-ggsave("alpha_diversity_observed.png", plot = p_observed, width = 8, height = 6, dpi = 300)
-
-# 3. Beta多样性分析 ---------------------------------------------------------
+# 3. Beta多样性分析
+# --------------------
 # 转换为相对丰度
 physeq_rel <- transform_sample_counts(physeq, function(x) x / sum(x))
 
 # 计算Bray-Curtis距离
-bray_dist <- phyloseq::distance(physeq_rel, method = "bray")
+dist_bc <- phyloseq::distance(physeq_rel, method = "bray")
 
 # PCoA分析
-pcoa_result <- ordinate(physeq_rel, method = "PCoA", distance = bray_dist)
+ord <- ordinate(physeq_rel, method = "PCoA", distance = dist_bc)
 
 # 提取PCoA坐标
-pcoa_df <- data.frame(pcoa_result$vectors)
-pcoa_df$Sample <- rownames(pcoa_df)
-pcoa_df <- merge(pcoa_df, as(sample_data, "data.frame"), by = "Sample")
-
-# 计算方差解释比例
-var_exp <- round(pcoa_result$values$Relative_eig * 100, 1)
+pcoa_df <- data.frame(sample_data(physeq),
+                      scores(ord, display = "sites"))
 
 # 绘制PCoA图
-p_pcoa <- ggplot(pcoa_df, aes(x = Axis.1, y = Axis.2, color = Group)) +
-  geom_point(size = 4) +
+p_pcoa <- ggplot(pcoa_df, aes(Axis.1, Axis.2, color = Group)) +
+  geom_point(size = 4, alpha = 0.8) +
   stat_ellipse(level = 0.95) +
-  labs(
-    title = "PCoA Plot (Bray-Curtis)",
-    x = paste0("PCoA1 (", var_exp[1], "%)"),
-    y = paste0("PCoA2 (", var_exp[2], "%)")
-  ) +
-  theme_minimal() +
+  labs(title = "PCoA (Bray-Curtis)",
+       x = paste0("PCoA1 (", round(ord$values$Relative_eig[1]*100, 1), "%)"),
+       y = paste0("PCoA2 (", round(ord$values$Relative_eig[2]*100, 1), "%)")) +
+  theme_classic() +
   scale_color_brewer(palette = "Set1")
 
-# 保存PCoA图
-ggsave("beta_diversity_pcoa.png", plot = p_pcoa, width = 8, height = 6, dpi = 300)
+ggsave("16S_Results/Plots/PCoA_Bray.png", p_pcoa, width = 8, height = 6, dpi = 300)
+ggsave("16S_Results/Plots/PCoA_Bray.pdf", p_pcoa, width = 8, height = 6)
 
 # PERMANOVA检验
-permanova_result <- adonis2(bray_dist ~ Group, data = as(sample_data, "data.frame"))
-write.csv(as.data.frame(permanova_result), "permanova_results.csv")
+adonis_res <- adonis2(dist_bc ~ Group, data = as(sample_data(physeq), "data.frame"))
+write.xlsx(as.data.frame(adonis_res), "16S_Results/Tables/PERMANOVA.xlsx")
 
-# 4. 物种组成分析 -----------------------------------------------------------
-# 在门水平上聚合
-physeq_phylum <- tax_glom(physeq_rel, "phylum")
-
-# 转换为数据框
-phylum_df <- psmelt(physeq_phylum) %>%
-  group_by(Sample, phylum) %>%
+# 4. 物种组成分析
+# --------------------
+# 门水平组成
+physeq_phylum <- tax_glom(physeq_rel, "Phylum")
+phylum_rel <- transform_sample_counts(physeq_phylum, function(x) x / sum(x))
+phylum_df <- psmelt(phylum_rel) %>%
+  group_by(Sample, Group, Phylum) %>%
   summarise(Abundance = sum(Abundance), .groups = "drop")
 
-# 计算平均丰度
-phylum_avg <- phylum_df %>%
-  group_by(Group, phylum) %>%
-  summarise(Abundance = mean(Abundance), .groups = "drop") %>%
-  group_by(Group) %>%
-  mutate(RelAbund = Abundance / sum(Abundance))
-
 # 绘制堆叠柱状图
-p_phylum <- ggplot(phylum_avg, aes(x = Group, y = RelAbund, fill = phylum)) +
+p_phylum <- ggplot(phylum_df, aes(x = Sample, y = Abundance, fill = Phylum)) +
   geom_bar(stat = "identity", width = 0.7) +
-  scale_fill_brewer(palette = "Set3") +
-  labs(
-    title = "Phylum-level Composition",
-    x = "Sample Group",
-    y = "Relative Abundance"
-  ) +
-  theme_minimal() +
+  facet_wrap(~Group, scales = "free_x") +
+  labs(title = "Phylum Level Composition",
+       y = "Relative Abundance") +
+  theme_classic() +
+  scale_fill_brewer(palette = "Paired") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
-# 保存物种组成图
-ggsave("phylum_composition.png", plot = p_phylum, width = 10, height = 6, dpi = 300)
+ggsave("16S_Results/Plots/Phylum_Composition.png", p_phylum, width = 12, height = 6, dpi = 300)
+ggsave("16S_Results/Plots/Phylum_Composition.pdf", p_phylum, width = 12, height = 6)
 
-# 5. 差异物种分析 -----------------------------------------------------------
-# 在属水平上分析差异
-physeq_genus <- tax_glom(physeq, "genus")
+# 属水平热图
+physeq_genus <- tax_glom(physeq_rel, "Genus")
+genus_rel <- transform_sample_counts(physeq_genus, function(x) x / sum(x))
+genus_mat <- otu_table(genus_rel)
 
-# 转换为DESeq2对象
-diagdds <- phyloseq_to_deseq2(physeq_genus, ~ Group)
+# 选择前20个丰度最高的属
+top_genus <- names(sort(colSums(genus_mat), decreasing = TRUE))[1:20]
+genus_mat <- genus_mat[, top_genus]
 
-# 设置对照组（根据实际情况修改）
-diagdds$Group <- relevel(diagdds$Group, ref = "group1")
+# 绘制热图
+pheatmap(genus_mat,
+         cluster_rows = TRUE,
+         cluster_cols = TRUE,
+         annotation_col = data.frame(Group = sample_data(physeq)$Group),
+         show_rownames = FALSE,
+         fontsize_col = 8,
+         filename = "16S_Results/Plots/Genus_Heatmap.png",
+         width = 10,
+         height = 8)
 
-# 运行DESeq2差异分析
-diff_genus <- DESeq(diagdds, test = "Wald", fitType = "parametric")
+# 5. 差异物种分析
+# --------------------
+# DESeq2差异分析
+diagdds <- phyloseq_to_deseq2(physeq, ~ Group)
+diagdds <- DESeq(diagdds, test = "Wald", fitType = "parametric")
 
-# 提取结果（比较group2 vs group1）
-res <- results(diff_genus, contrast = c("Group", "group2", "group1"))
-res <- res[order(res$padj), ]
+# 提取结果
+res <- results(diagdds, contrast = c("Group", "OB", "CON"))
+res_sig <- res[which(res$padj < 0.05), ]
 
-# 添加分类学信息
+# 保存结果
 res_df <- as.data.frame(res)
-res_df$genus <- rownames(res_df)
-res_df <- merge(res_df, as.data.frame(TAX)[, c("genus", "family", "order", "class", "phylum")], 
-                by = "genus", all.x = TRUE)
+write.xlsx(res_df, "16S_Results/Tables/DESeq2_Results.xlsx")
 
-# 保存差异分析结果
-write.csv(res_df, "differential_genus_group2_vs_group1.csv", row.names = FALSE)
-
-# 绘制差异物种火山图
-volcano_data <- res_df %>%
-  mutate(
-    sig = ifelse(padj < 0.05 & abs(log2FoldChange) > 1, 
-                 ifelse(log2FoldChange > 1, "Up", "Down"), "NS")
-  )
-
-p_volcano <- ggplot(volcano_data, aes(x = log2FoldChange, y = -log10(padj), color = sig)) +
-  geom_point(alpha = 0.7, size = 2) +
-  scale_color_manual(values = c("Up" = "red", "Down" = "blue", "NS" = "grey")) +
-  geom_vline(xintercept = c(-1, 1), linetype = "dashed") +
-  geom_hline(yintercept = -log10(0.05), linetype = "dashed") +
-  labs(
-    title = "Differential Genus (group2 vs group1)",
-    x = "Log2 Fold Change",
-    y = "-Log10 Adjusted P-value"
-  ) +
-  theme_minimal()
-
-# 保存火山图
-ggsave("differential_genus_volcano.png", plot = p_volcano, width = 10, height = 8, dpi = 300)
-
-# 6. 生成综合报告 -----------------------------------------------------------
-# 创建多面板图
-combined_plot <- plot_grid(
-  p_shannon + theme(legend.position = "none"),
-  p_observed + theme(legend.position = "none"),
-  p_pcoa + theme(legend.position = "none"),
-  p_phylum + theme(legend.position = "none"),
-  labels = c("A", "B", "C", "D"),
-  ncol = 2
+# 绘制火山图
+volcano_df <- data.frame(
+  log2FoldChange = res$log2FoldChange,
+  padj = res$padj,
+  sig = ifelse(res$padj < 0.05 & abs(res$log2FoldChange) > 1, "Yes", "No")
 )
 
-# 保存综合图
-ggsave("comprehensive_analysis.png", plot = combined_plot, width = 12, height = 10, dpi = 300)
+p_volcano <- ggplot(volcano_df, aes(x = log2FoldChange, y = -log10(padj), color = sig)) +
+  geom_point(alpha = 0.6, size = 2) +
+  scale_color_manual(values = c("No" = "grey", "Yes" = "red")) +
+  geom_vline(xintercept = c(-1, 1), linetype = "dashed") +
+  geom_hline(yintercept = -log10(0.05), linetype = "dashed") +
+  labs(title = "Differential Abundance (OB vs CON)",
+       x = "Log2 Fold Change",
+       y = "-Log10 Adjusted P-value") +
+  theme_classic()
 
-# 保存会话信息
-sessionInfo()
+ggsave("16S_Results/Plots/Volcano_DESeq2.png", p_volcano, width = 8, height = 6, dpi = 300)
+ggsave("16S_Results/Plots/Volcano_DESeq2.pdf", p_volcano, width = 8, height = 6)
+
+# 6. 系统发育树（可选）
+# --------------------
+# 如果有系统发育树文件，可添加以下代码：
+# tree <- read_tree("phylogenetic_tree.nwk")
+# physeq_tree <- merge_phyloseq(physeq, tree)
+# plot_tree(physeq_tree, color = "Group", label.tips = "Genus")
+
+# 7. 生成分析报告摘要
+# --------------------
+report <- data.frame(
+  Analysis = c("Sample Count", "OTU Count", "Alpha Diversity (Shannon)", "Beta Diversity (PERMANOVA R2)"),
+  Result = c(
+    nrow(sample_data),
+    ntaxa(physeq),
+    paste(round(mean(alpha_div$Shannon), 2), "±", round(sd(alpha_div$Shannon), 2)),
+    paste(round(adonis_res$R2[1], 3), "p =", round(adonis_res$`Pr(>F)`[1], 3))
+  )
+)
+
+write.xlsx(report, "16S_Results/Tables/Analysis_Summary.xlsx")
+
+# 结束提示
+cat("\n16S分析完成！结果已保存至 '16S_Results' 文件夹\n")
