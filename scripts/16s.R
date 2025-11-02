@@ -1,260 +1,543 @@
-# 加载必要的包
-library(phyloseq)
-library(vegan)
-library(ggplot2)
-library(dplyr)
-library(tidyr)
-library(microbiome)
-library(DESeq2)
-library(pheatmap)
-library(reshape2)
-library(openxlsx)
-library(multcomp)
-library(ggpubr)
-library(RColorBrewer)
+# ==============================================================================
+# 16S Microbiome Comprehensive Analysis Pipeline
+# Date: 2025-11-02
+# Input: otu_table.txt (SampleID, Group, OTUs...)
+# Optional Input: clinical_data.xlsx, PICRUSt2 outputs
+# Output: A series of PDF/PNG figures and XLSX result tables.
+# ==============================================================================
 
-# 创建输出目录
-dir.create("16S_Results", showWarnings = FALSE)
-dir.create("16S_Results/Plots", showWarnings = FALSE)
-dir.create("16S_Results/Tables", showWarnings = FALSE)
 
-# 1. 数据导入与预处理
-# --------------------
-# 读取OTU表格
-otu_data <- read.csv("GROUP2/species.csv", row.names = 1, check.names = FALSE)
+# --- 0. Environment Setup, Library Installation, and Data Loading ---
 
-# 提取样本信息
-sample_data <- otu_data[, 1, drop = FALSE]
-colnames(sample_data) <- "Group"
-sample_data$Sample <- rownames(sample_data)
+# 0.1 Clean environment
+rm(list = ls())
 
-# 提取OTU矩阵
-otu_matrix <- otu_data[, -1];
-
-for(name in colnames(otu_matrix)) {
-  otu_matrix[, name] = as.integer(otu_matrix[, name] * 1000);
-}
-
-otu_matrix = as.matrix(otu_matrix);
-rownames(otu_matrix) <- rownames(otu_data);
-
-# 解析物种注释信息
-taxa_names <- colnames(otu_matrix)
-tax_table <- data.frame(
-  OTU = taxa_names,
-  Kingdom = sapply(strsplit(taxa_names, ";"), `[`, 1),
-  Phylum = sapply(strsplit(taxa_names, ";"), `[`, 2),
-  Class = sapply(strsplit(taxa_names, ";"), `[`, 3),
-  Order = sapply(strsplit(taxa_names, ";"), `[`, 4),
-  Family = sapply(strsplit(taxa_names, ";"), `[`, 5),
-  Genus = sapply(strsplit(taxa_names, ";"), `[`, 6),
-  Species = sapply(strsplit(taxa_names, ";"), `[`, 7),
-  stringsAsFactors = FALSE
+# 0.2 Install and load required packages
+# Create a list of packages to be installed/loaded
+packages <- c(
+  "tidyverse", "openxlsx", "phyloseq", "microbiome", "vegan", "picante",
+  "DESeq2", "randomForest", "pROC", "lem", "VennDiagram", "igraph", "ggraph",
+  "Hmisc", "corrplot", "pheatmap", "ape", "ggtree", "ggpubr", "RColorBrewer"
 )
 
-# 清理分类信息
-clean_tax <- function(x) {
-  gsub("^[a-z]__", "", x)
-}
-tax_table[, -1] <- lapply(tax_table[, -1], clean_tax)
-rownames(tax_table) <- taxa_names
-
-print(tax_table)
-
-# 创建phyloseq对象
-OTU <- otu_table(otu_matrix, taxa_are_rows = FALSE)
-TAX <- tax_table(as.matrix(tax_table))
-SAM <- sample_data(sample_data)
-physeq <- phyloseq(OTU, TAX, SAM)
-
-# 保存原始phyloseq对象用于Alpha多样性分析
-physeq_raw <- physeq
-
-# 过滤低丰度OTU (在至少20%样本中相对丰度>0.01%)
-physeq <- filter_taxa(physeq, function(x) sum(x > 0) > length(x)*0.2, TRUE)
-
-# 2. Alpha多样性分析
-# --------------------
-# 计算多样性指数
-alpha_div <- estimate_richness(physeq, measures = c("Observed", "Shannon", "Simpson"))
-alpha_div$Group <- sample_data(physeq)$Group
-alpha_div$Sample <- sample_names(physeq)
-
-# 保存表格
-write.xlsx(alpha_div, "16S_Results/Tables/Alpha_Diversity.xlsx")
-
-# 绘制多样性指数箱线图
-plot_alpha <- function(metric) {
-  ggplot(alpha_div, aes(x = Group, y = .data[[metric]], fill = Group)) +
-    geom_boxplot(alpha = 0.7) +
-    geom_jitter(width = 0.2, size = 2) +
-    stat_compare_means(method = "wilcox.test") +
-    labs(title = paste("Alpha Diversity:", metric),
-         y = metric,
-         x = "Group") +
-    theme_classic() +
-    scale_fill_brewer(palette = "Set2")
+# Check if packages are installed, install if not, then load them
+for (pkg in packages) {
+  if (!requireNamespace(pkg, quietly = TRUE)) {
+    install.packages(pkg, dependencies = TRUE, repos = "https://mirrors.tuna.tsinghua.edu.cn/CRAN/")
+  }
+  library(pkg, character.only = TRUE)
 }
 
-metrics <- c("Observed", "Shannon", "Simpson")
-lapply(metrics, function(m) {
-  p <- plot_alpha(m)
-  ggsave(paste0("16S_Results/Plots/Alpha_", m, ".png"), p, width = 8, height = 6, dpi = 300)
-  ggsave(paste0("16S_Results/Plots/Alpha_", m, ".pdf"), p, width = 8, height = 6)
+# Bioconductor packages
+bioc_packages <- c("phyloseq", "microbiome", "DESeq2", "lem")
+for (pkg in bioc_packages) {
+  if (!requireNamespace(pkg, quietly = TRUE)) {
+    if (!requireNamespace("BiocManager", quietly = TRUE)) {
+      install.packages("BiocManager", repos = "https://mirrors.tuna.tsinghua.edu.cn/CRAN/")
+    }
+    BiocManager::install(pkg, update = FALSE, ask = FALSE)
+  }
+  library(pkg, character.only = TRUE)
+}
+
+
+# 0.3 Set up output directories
+main_dir <- "Microbiome_Analysis_Results"
+dir.create(main_dir, showWarnings = FALSE)
+sub_dirs <- c("01_Community_Structure", "02_Diversity", "03_Differential_Analysis", 
+              "04_ROC_Analysis", "05_Network_Analysis", "06_Clinical_Correlation",
+              "07_Function_Prediction")
+sapply(sub_dirs, function(dir) dir.create(file.path(main_dir, dir), showWarnings = FALSE))
+
+# 0.4 Load and prepare data
+# Load OTU table
+otu_data <- read.delim("otu_table.txt", stringsAsFactors = FALSE, check.names = FALSE)
+rownames(otu_data) <- otu_data$SampleID
+otu_data$SampleID <- NULL
+meta_data <- as.data.frame(otu_data$Group)
+colnames(meta_data) <- "Group"
+rownames(meta_data) <- rownames(otu_data)
+otu_data$Group <- NULL
+
+# Create OTU matrix for phyloseq
+otu_matrix <- as.matrix(otu_data)
+
+# Create taxonomy table from OTU names (ASSUMPTION: names are like k__...;p__...;...)
+parse_taxonomy <- function(tax_str) {
+  tax_vec <- unlist(strsplit(tax_str, ";"))
+  tax_levels <- c("Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Species")
+  tax_df <- data.frame(matrix(NA, nrow = 1, ncol = length(tax_levels)))
+  colnames(tax_df) <- tax_levels
+  for (i in 1:length(tax_vec)) {
+    if (grepl("__", tax_vec[i])) {
+      tax_df[1, i] <- gsub("^[kpcofgs]__", "", tax_vec[i])
+    }
+  }
+  return(tax_df)
+}
+tax_list <- apply(data.frame(OTU = colnames(otu_matrix)), 1, function(x) parse_taxonomy(x))
+tax_table <- do.call(rbind, tax_list)
+rownames(tax_table) <- colnames(otu_matrix)
+tax_table <- as.matrix(tax_table)
+
+# Create phyloseq object
+PS <- phyloseq(otu_table(otu_matrix, taxa_are_rows = FALSE),
+               sample_data(meta_data),
+               tax_table(tax_table))
+
+# Filter out low-prevalence taxa (e.g., present in less than 10% of samples)
+PS <- filter_taxa(PS, function(x) sum(x > 0) > (0.1 * length(x)), TRUE)
+
+# --- 1. Community Structure Analysis ---
+
+# 1.1 Community Composition (Stacked Bar Plot)
+plot_composition <- function(ps, level) {
+  ps_glom <- tax_glom(ps, taxrank = level)
+  ps_rel <- transform_sample_counts(ps_glom, function(x) x / sum(x))
+  df <- psmelt(ps_rel)
+  df$Abundance <- df$Abundance * 100
+  
+  p <- ggplot(df, aes(x = Sample, y = Abundance, fill = get(level))) +
+    geom_bar(stat = "identity", width = 0.7) +
+    facet_wrap(~Group, scales = "free_x") +
+    theme_bw() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1),
+          legend.position = "right") +
+    labs(x = "Samples", y = "Relative Abundance (%)", fill = level)
+  
+  # Save plots
+  ggsave(filename = file.path(main_dir, "01_Community_Structure", paste0("Composition_", level, ".pdf")), plot = p, width = 12, height = 8)
+  ggsave(filename = file.path(main_dir, "01_Community_Structure", paste0("Composition_", level, ".png")), plot = p, width = 12, height = 8, dpi = 300)
+  
+  # Save data
+  write.xlsx(df, file = file.path(main_dir, "01_Community_Structure", paste0("Composition_", level, "_data.xlsx")))
+}
+
+for (lvl in c("Phylum", "Class", "Order", "Family", "Genus")) {
+  if (lvl %in% rank_names(PS)) {
+    plot_composition(PS, lvl)
+  }
+}
+
+# 1.2 Venn Diagram (Shared/Unique OTUs)
+group_list <- split(rownames(otu_table(PS)), sample_data(PS)$Group)
+otu_lists <- lapply(group_list, function(g) {
+  taxa_names(PS)[which(rowSums(otu_table(PS)[g, ]) > 0)]
 })
-
-# 3. Beta多样性分析
-# --------------------
-# 转换为相对丰度
-physeq_rel <- transform_sample_counts(physeq, function(x) x / sum(x))
-
-# 计算Bray-Curtis距离
-dist_bc <- phyloseq::distance(physeq_rel, method = "bray")
-
-# PCoA分析
-ord <- ordinate(physeq_rel, method = "PCoA", distance = dist_bc)
-
-# 提取PCoA坐标
-# pcoa_df <- data.frame(sample_data(physeq),
-#                       scores(ord, display = "sites"))
-# 提取PCoA坐标
-# 直接从ordinate结果中提取坐标向量，这比使用scores()函数更稳定
-pcoa_sites <- as.data.frame(ord$vectors)
-# 确保样本名称与元数据匹配
-rownames(pcoa_sites) <- rownames(sample_data(physeq))
-# 合并样本信息和PCoA坐标
-pcoa_df <- cbind(sample_data(physeq), pcoa_sites)
-
-
-# 绘制PCoA图
-p_pcoa <- ggplot(pcoa_df, aes(Axis.1, Axis.2, color = Group)) +
-  geom_point(size = 4, alpha = 0.8) +
-  stat_ellipse(level = 0.95) +
-  labs(title = "PCoA (Bray-Curtis)",
-       x = paste0("PCoA1 (", round(ord$values$Relative_eig[1]*100, 1), "%)"),
-       y = paste0("PCoA2 (", round(ord$values$Relative_eig[2]*100, 1), "%)")) +
-  theme_classic() +
-  scale_color_brewer(palette = "Set1")
-
-ggsave("16S_Results/Plots/PCoA_Bray.png", p_pcoa, width = 8, height = 6, dpi = 300)
-ggsave("16S_Results/Plots/PCoA_Bray.pdf", p_pcoa, width = 8, height = 6)
-
-# PERMANOVA检验
-adonis_res <- adonis2(dist_bc ~ Group, data = as(sample_data(physeq), "data.frame"))
-write.xlsx(as.data.frame(adonis_res), "16S_Results/Tables/PERMANOVA.xlsx")
-
-# 5. 物种组成分析
-# --------------------
-# 门水平组成
-physeq_phylum <- tax_glom(physeq_rel, "Phylum")
-phylum_rel <- transform_sample_counts(physeq_phylum, function(x) x / sum(x))
-phylum_df <- psmelt(phylum_rel) %>%
-  group_by(Sample, Group, Phylum) %>%
-  summarise(Abundance = sum(Abundance), .groups = "drop")
-
-# 绘制堆叠柱状图
-p_phylum <- ggplot(phylum_df, aes(x = Sample, y = Abundance, fill = Phylum)) +
-  geom_bar(stat = "identity", width = 0.7) +
-  facet_wrap(~Group, scales = "free_x") +
-  labs(title = "Phylum Level Composition",
-       y = "Relative Abundance") +
-  theme_classic() +
-  scale_fill_brewer(palette = "Paired") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-
-ggsave("16S_Results/Plots/Phylum_Composition.png", p_phylum, width = 12, height = 6, dpi = 300)
-ggsave("16S_Results/Plots/Phylum_Composition.pdf", p_phylum, width = 12, height = 6)
-
-# --- 修改开始：属水平热图 ---
-# 属水平热图
-physeq_genus <- tax_glom(physeq_rel, "Genus")
-genus_rel <- transform_sample_counts(physeq_genus, function(x) x / sum(x))
-genus_mat <- otu_table(genus_rel)
-
-# 选择前20个丰度最高的属
-top_genus <- names(sort(colSums(genus_mat), decreasing = TRUE))[1:20]
-genus_mat <- genus_mat[, top_genus]
-
-# 1. 创建用于注释的数据框
-# 确保行名是样本名，与genus_mat的列名匹配
-annotation_df <- data.frame(
-  Group = sample_data(physeq)$Group,
-  row.names = sample_names(physeq)
+venn.plot <- venn.diagram(
+  x = otu_lists,
+  category.names = names(otu_lists),
+  filename = NULL,
+  output = TRUE,
+  col = "transparent",
+  fill = RColorBrewer::brewer.pal(length(otu_lists), "Set3"),
+  alpha = 0.50,
+  cex = 1.5,
+  cat.cex = 1.2,
+  cat.col = "black",
+  margin = 0.2
 )
-# 确保Group是因子类型
-annotation_df$Group <- as.factor(annotation_df$Group)
+pdf(file.path(main_dir, "01_Community_Structure", "Venn_Diagram.pdf"), width = 8, height = 8)
+grid.draw(venn.plot)
+dev.off()
+png(file.path(main_dir, "01_Community_Structure", "Venn_Diagram.png"), width = 2400, height = 2400, res = 300)
+grid.draw(venn.plot)
+dev.off()
+write.xlsx(otu_lists, file.path(main_dir, "01_Community_Structure", "Venn_OTU_lists.xlsx"))
 
-# 2. 为分组定义颜色
-# 获取唯一的分组名称
-group_levels <- levels(annotation_df$Group)
-# 从RColorBrewer中选择一个调色板，并分配颜色
-# 确保颜色数量大于等于分组数量
-group_colors <- brewer.pal(max(3, length(group_levels)), "Set2")[1:length(group_levels)]
-names(group_colors) <- group_levels # 将颜色名称与分组名称对应
+# 1.3 Sample-Species Heatmap (Top abundant species)
+ps_rel <- transform_sample_counts(PS, function(x) x / sum(x))
+top_taxa <- names(sort(taxa_sums(ps_rel), TRUE))[1:30]
+ps_top <- prune_taxa(top_taxa, ps_rel)
+df_heatmap <- psmelt(ps_top)
+df_heatmap_cast <- dcast(df_heatmap, Sample ~ Genus, value.var = "Abundance", fill = 0)
+rownames(df_heatmap_cast) <- df_heatmap_cast$Sample
+df_heatmap_cast$Sample <- NULL
+mat_heatmap <- as.matrix(df_heatmap_cast)
 
-# 3. 绘制热图
-pheatmap(genus_mat,
-         cluster_rows = TRUE,
-         cluster_cols = TRUE,
-         annotation_col = annotation_df,
-         annotation_colors = list(Group = group_colors), # 关键修改：手动指定颜色
+pheatmap(mat_heatmap,
+         annotation_col = as.data.frame(sample_data(PS)),
          show_rownames = FALSE,
-         fontsize_col = 8,
-         main = "Top 20 Genus Abundance Heatmap", # 添加一个标题是好习惯
-         filename = "16S_Results/Plots/Genus_Heatmap.png",
-         width = 10,
-         height = 8)
-# --- 修改结束 ---
+         scale = "row",
+         clustering_distance_rows = "correlation",
+         clustering_method = "complete",
+         filename = file.path(main_dir, "01_Community_Structure", "Sample_Species_Heatmap.pdf"),
+         width = 10, height = 12)
+pheatmap(mat_heatmap,
+         annotation_col = as.data.frame(sample_data(PS)),
+         show_rownames = FALSE,
+         scale = "row",
+         clustering_distance_rows = "correlation",
+         clustering_method = "complete",
+         filename = file.path(main_dir, "01_Community_Structure", "Sample_Species_Heatmap.png"),
+         width = 10, height = 12)
+
+write.xlsx(df_heatmap, file.path(main_dir, "01_Community_Structure", "Heatmap_data.xlsx"))
 
 
-# 6. 差异物种分析
-# --------------------
-# DESeq2差异分析（使用原始计数数据）
-diagdds <- phyloseq_to_deseq2(physeq, ~ Group)
-diagdds <- DESeq(diagdds, test = "Wald", fitType = "parametric")
+# --- 2. Diversity Analysis ---
 
-# 提取结果
-res <- results(diagdds, contrast = c("Group", "OB", "CON"))
-res_sig <- res[which(res$padj < 0.05), ]
+# 2.1 Alpha Diversity
+alpha_div <- estimate_richness(PS, measures = c("Observed", "Chao1", "Shannon", "Simpson"))
+alpha_div$Group <- sample_data(PS)$Group
+alpha_div$SampleID <- rownames(alpha_div)
 
-# 保存结果
-res_df <- as.data.frame(res)
-write.xlsx(res_df, "16S_Results/Tables/DESeq2_Results.xlsx")
+# Good's Coverage
+goods_coverage <- function(x) { 1 - sum(x == 1) / sum(x) }
+coverage <- apply(otu_table(PS), 1, goods_coverage)
+alpha_div$GoodsCoverage <- coverage[match(rownames(alpha_div), names(coverage))]
 
-# 绘制火山图
-volcano_df <- data.frame(
-  log2FoldChange = res$log2FoldChange,
-  padj = res$padj,
-  sig = ifelse(res$padj < 0.05 & abs(res$log2FoldChange) > 1, "Yes", "No")
+# Save alpha diversity table
+write.xlsx(alpha_div, file = file.path(main_dir, "02_Diversity", "Alpha_Diversity_Table.xlsx"))
+
+# Plot alpha diversity
+plot_alpha <- function(measure) {
+  p <- ggplot(alpha_div, aes(x = Group, y = get(measure), fill = Group)) +
+    geom_boxplot() +
+    geom_jitter(width = 0.2, size = 1.5) +
+    theme_bw() +
+    stat_compare_means(method = "kruskal.test", label = "p.signif") +
+    labs(x = "Group", y = measure, title = paste("Alpha Diversity:", measure))
+  
+  ggsave(file.path(main_dir, "02_Diversity", paste0("Alpha_", measure, ".pdf")), plot = p, width = 8, height = 6)
+  ggsave(file.path(main_dir, "02_Diversity", paste0("Alpha_", measure, ".png")), plot = p, width = 8, height = 6, dpi = 300)
+}
+for (m in c("Observed", "Chao1", "Shannon", "Simpson", "GoodsCoverage")) {
+  plot_alpha(m)
+}
+
+# 2.2 Beta Diversity
+# Calculate distance matrix
+dist_bray <- distance(PS, method = "bray")
+dist_unifrac <- distance(PS, method = "unifrac", weighted = TRUE)
+
+# Ordination functions
+plot_ordination_ps <- function(ordination_method, dist_method, title) {
+  ord <- ordinate(PS, method = ordination_method, distance = dist_method)
+  p <- plot_ordination(PS, ord, color = "Group", shape = "Group") +
+    geom_point(size = 3) +
+    theme_bw() +
+    labs(title = title)
+  
+  ggsave(file.path(main_dir, "02_Diversity", paste0(ordination_method, "_", dist_method, ".pdf")), plot = p, width = 8, height = 6)
+  ggsave(file.path(main_dir, "02_Diversity", paste0(ordination_method, "_dist_method, ".png")), plot = p, width = 8, height = 6, dpi = 300)
+}
+
+# PCA
+plot_ordination_ps("PCA", "bray", "PCA (Bray-Curtis)")
+# PCoA
+plot_ordination_ps("PCoA", "bray", "PCoA (Bray-Curtis)")
+plot_ordination_ps("PCoA", "unifrac", "PCoA (Weighted UniFrac)")
+# NMDS
+plot_ordination_ps("NMDS", "bray", "NMDS (Bray-Curtis)")
+
+# Statistical tests for beta diversity
+group_factor <- sample_data(PS)$Group
+anosim_res <- anosim(dist_bray, group_factor)
+adonis_res <- adonis2(dist_bray ~ group_factor)
+
+beta_stats <- rbind(
+  ANOSIM_R = c(R = anosim_res$statistic, `P-value` = anosim_res$signif),
+  Adonis_R2 = c(R = adonis_res$R2[1], `P-value` = adonis_res$`Pr(>F)`[1])
 )
+write.xlsx(beta_stats, file = file.path(main_dir, "02_Diversity", "Beta_Diversity_Statistics.xlsx"))
 
-p_volcano <- ggplot(volcano_df, aes(x = log2FoldChange, y = -log10(padj), color = sig)) +
-  geom_point(alpha = 0.6, size = 2) +
-  scale_color_manual(values = c("No" = "grey", "Yes" = "red")) +
-  geom_vline(xintercept = c(-1, 1), linetype = "dashed") +
-  geom_hline(yintercept = -log10(0.05), linetype = "dashed") +
-  labs(title = "Differential Abundance (OB vs CON)",
-       x = "Log2 Fold Change",
-       y = "-Log10 Adjusted P-value") +
-  theme_classic()
+# UPGMA Clustering
+hc <- hclust(dist_bray, method = "average")
+plot(hc, main = "UPGMA Clustering (Bray-Curtis)", xlab = "", sub = "")
+dev.copy(pdf, file.path(main_dir, "02_Diversity", "UPGMA_Tree.pdf"), width = 8, height = 6)
+dev.off()
+dev.copy(png, file.path(main_dir, "02_Diversity", "UPGMA_Tree.png"), width = 2400, height = 1800, res = 300)
+dev.off()
 
-ggsave("16S_Results/Plots/Volcano_DESeq2.png", p_volcano, width = 8, height = 6, dpi = 300)
-ggsave("16S_Results/Plots/Volcano_DESeq2.pdf", p_volcano, width = 8, height = 6)
 
-# 7. 生成分析报告摘要
-# --------------------
-report <- data.frame(
-  Analysis = c("Sample Count", "OTU Count (Raw)", "OTU Count (Filtered)", "Alpha Diversity (Shannon)", "Beta Diversity (PERMANOVA R2)"),
-  Result = c(
-    nrow(sample_data),
-    ntaxa(physeq_raw),
-    ntaxa(physeq),
-    paste(round(mean(alpha_div$Shannon), 2), "±", round(sd(alpha_div$Shannon), 2)),
-    paste(round(adonis_res$R2[1], 3), "p =", round(adonis_res$`Pr(>F)`[1], 3))
+# --- 3. Differential Abundance Analysis ---
+
+# 3.1 LEfSe Analysis (using lem package)
+# Note: lem requires specific formatting. We provide the phyloseq object.
+# It's good to aggregate to a certain taxonomic level, e.g., Genus.
+PS_genus <- tax_glom(PS, "Genus")
+lem_res <- lem(PS_genus, group = "Group", wilcoxon_cutoff = 0.05)
+# lem_res is a list, we are interested in the LDA results
+lda_res <- lem_res$lda_res
+lda_res <- lda_res[order(lda_res$LDA, decreasing = TRUE), ]
+write.xlsx(lda_res, file = file.path(main_dir, "03_Differential_Analysis", "LEfSe_Results.xlsx"))
+
+# Plot LEfSe results (Cladogram is complex, a bar plot of LDA scores is common)
+p_lda <- ggplot(lda_res[1:20, ], aes(x = reorder(Taxon, LDA), y = LDA, fill = Group)) +
+  geom_bar(stat = "identity") +
+  coord_flip() +
+  theme_bw() +
+  labs(x = "Taxon", y = "LDA Score", title = "LEfSe LDA Scores (Top 20)")
+ggsave(file.path(main_dir, "03_Differential_Analysis", "LEfSe_LDA_Plot.pdf"), plot = p_lda, width = 10, height = 8)
+ggsave(file.path(main_dir, "03_Differential_Analysis", "LEfSe_LDA_Plot.png"), plot = p_lda, width = 10, height = 8, dpi = 300)
+
+
+# 3.2 Group-wise significance analysis (using DESeq2)
+# DESeq2 requires raw counts, not normalized. We use the original PS object.
+diagdds <- phyloseq_to_deseq2(PS, ~ Group)
+# Calculate geometric means for normalization
+gm_mean = function(x) {
+  if (all(x == 0)) {
+    return(0)
+  }
+  exp(mean(log(x[x > 0])))
+}
+geo_means <- apply(counts(diagdds), 1, gm_mean)
+diagdds <- estimateSizeFactors(diagdds, geoMeans = geo_means)
+diagdds <- DESeq(diagdds, test = "Wald", fitType = "local")
+
+# Results for pairwise comparisons
+groups <- unique(sample_data(PS)$Group)
+pairwise_comb <- combn(groups, 2, simplify = FALSE)
+res_list <- list()
+
+for (p in pairwise_comb) {
+  contrast <- c("Group", p[1], p[2])
+  res <- results(diagdds, contrast = contrast, alpha = 0.05)
+  res <- res[order(res$padj), ]
+  sig_res <- subset(res, padj < 0.05 & abs(log2FoldChange) > 1)
+  res_list[[paste(p[1], "_vs_", p[2], sep = "")]] <- as.data.frame(sig_res)
+}
+write.xlsx(res_list, file = file.path(main_dir, "03_Differential_Analysis", "DESeq2_Results.xlsx"))
+
+# 3.3 Random Forest Analysis
+# Convert to matrix suitable for randomForest
+otu_mat <- t(otu_table(PS))
+group_vec <- as.factor(sample_data(PS)$Group)
+
+set.seed(123)
+rf_model <- randomForest(x = otu_mat, y = group_vec, importance = TRUE, ntree = 500)
+rf_importance <- importance(rf_model)
+rf_importance_df <- data.frame(Taxon = rownames(rf_importance), MeanDecreaseGini = rf_importance[, "MeanDecreaseGini"])
+rf_importance_df <- rf_importance_df[order(rf_importance_df$MeanDecreaseGini, decreasing = TRUE), ]
+write.xlsx(rf_importance_df, file = file.path(main_dir, "03_Differential_Analysis", "RandomForest_Importance.xlsx"))
+
+p_rf <- ggplot(rf_importance_df[1:20, ], aes(x = reorder(Taxon, MeanDecreaseGini), y = MeanDecreaseGini)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  coord_flip() +
+  theme_bw() +
+  labs(x = "Taxon (OTU)", y = "Mean Decrease in Gini", title = "Random Forest Importance (Top 20)")
+ggsave(file.path(main_dir, "03_Differential_Analysis", "RandomForest_Plot.pdf"), plot = p_rf, width = 10, height = 8)
+ggsave(file.path(main_dir, "03_Differential_Analysis", "RandomForest_Plot.png"), plot = p_rf, width = 10, height = 8, dpi = 300)
+
+
+# --- 4. Disease Diagnosis Model (ROC Curve Analysis) ---
+# Note: ROC is for binary classification. We will perform pairwise comparisons.
+# We use a top biomarker from LEfSe or Random Forest.
+biomarker <- rf_importance_df$Taxon[1]
+
+roc_list <- list()
+for (p in pairwise_comb) {
+  group1_samples <- rownames(sample_data(PS))[sample_data(PS)$Group == p[1]]
+  group2_samples <- rownames(sample_data(PS))[sample_data(PS)$Group == p[2]]
+  
+  df_roc <- data.frame(
+    Abundance = otu_mat[c(group1_samples, group2_samples), biomarker],
+    Group = factor(c(rep(p[1], length(group1_samples)), rep(p[2], length(group2_samples))))
   )
+  
+  roc_obj <- roc(df_roc$Group, df_roc$Abundance, levels = rev(levels(df_roc$Group)), direction = "<")
+  roc_list[[paste(p[1], "_vs_", p[2], sep = "")]] <- list(auc = auc(roc_obj), ci = ci.auc(roc_obj))
+  
+  p_roc <- ggroc(roc_obj) +
+    geom_segment(aes(x = 0, xend = 1, y = 0, yend = 1), linetype = "dashed") +
+    theme_bw() +
+    labs(title = paste("ROC Curve for", biomarker, ":", p[1], "vs", p[2]),
+         subtitle = paste("AUC =", round(auc(roc_obj), 3)))
+  
+  ggsave(filename = file.path(main_dir, "04_ROC_Analysis", paste0("ROC_", p[1], "_vs_", p[2], ".pdf")), plot = p_roc, width = 6, height = 5)
+  ggsave(filename = file.path(main_dir, "04_ROC_Analysis", paste0("ROC_", p[1], "_vs_", p[2], ".png")), plot = p_roc, width = 6, height = 5, dpi = 300)
+}
+write.xlsx(roc_list, file = file.path(main_dir, "04_ROC_Analysis", "ROC_AUC_Results.xlsx"))
+
+
+# --- 5. Species Correlation Network Analysis ---
+# We'll build a network based on Spearman correlation.
+# Filter to a specific group or use all samples. Here we use all.
+cor_mat <- rcorr(as.matrix(otu_mat), type = "spearman")
+r_values <- cor_mat$r
+p_values <- cor_mat$P
+
+# Set thresholds
+r_threshold <- 0.6
+p_threshold <- 0.05
+
+# Create edge list
+edges <- which(p_values < p_threshold & abs(r_values) > r_threshold, arr.ind = TRUE)
+edges <- edges[edges[, 1] < edges[, 2], ] # Remove duplicates
+edge_list <- data.frame(
+  from = rownames(r_values)[edges[, 1]],
+  to = colnames(r_values)[edges[, 2]],
+  weight = r_values[edges]
 )
+write.xlsx(edge_list, file = file.path(main_dir, "05_Network_Analysis", "Network_Edges.xlsx"))
 
-write.xlsx(report, "16S_Results/Tables/Analysis_Summary.xlsx")
+# Create igraph object
+net <- graph_from_data_frame(edge_list, directed = FALSE)
+net <- simplify(net) # Remove loops and multiple edges
 
-# 结束提示
-cat("\n16S分析完成！结果已保存至 '16S_Results' 文件夹\n")
+# Add node attributes (e.g., Phylum)
+node_info <- data.frame(Taxon = V(net)$name)
+node_info$Phylum <- tax_table(PS)[node_info$Taxon, "Phylum"]
+V(net)$Phylum <- node_info$Phylum
+
+# Plot network
+ggraph(net, layout = "fr") +
+  geom_edge_link(aes(width = abs(weight), color = weight > 0), alpha = 0.5) +
+  scale_edge_color_manual(values = c("red", "blue"), guide = "none") +
+  geom_node_point(aes(color = Phylum), size = 5) +
+  theme_void() +
+  theme(legend.position = "right") +
+  labs(title = "Spearman Correlation Network")
+
+ggsave(file.path(main_dir, "05_Network_Analysis", "Correlation_Network.pdf"), width = 10, height = 10)
+ggsave(file.path(main_dir, "05_Network_Analysis", "Correlation_Network.png"), width = 10, height = 10, dpi = 300)
+
+
+# --- 6. Correlation with Clinical Indicators ---
+# IMPORTANT: This section requires a 'clinical_data.xlsx' file.
+if (file.exists("clinical_data.xlsx")) {
+  clinical_data <- read.xlsx("clinical_data.xlsx")
+  # Ensure SampleID is the first column and is character
+  clinical_data$SampleID <- as.character(clinical_data[[1]])
+  rownames(clinical_data) <- clinical_data$SampleID
+  clinical_data$SampleID <- NULL
+  
+  # Merge with phyloseq sample data
+  sample_data(PS) <- merge(sample_data(PS), clinical_data, by = "row.names")
+  colnames(sample_data(PS))[1] <- "SampleID"
+  rownames(sample_data(PS)) <- sample_data(PS)$SampleID
+  sample_data(PS)$SampleID <- NULL
+  
+  # 6.1 Spearman correlation between species (e.g., Genus) and clinical factors
+  ps_genus_rel <- transform_sample_counts(tax_glom(PS, "Genus"), function(x) x / sum(x))
+  genus_mat <- t(otu_table(ps_genus_rel))
+  clinical_mat <- as.matrix(sample_data(PS)[, !(colnames(sample_data(PS)) %in% "Group")])
+  
+  # Ensure samples match
+  common_samples <- intersect(rownames(genus_mat), rownames(clinical_mat))
+  genus_mat <- genus_mat[common_samples, ]
+  clinical_mat <- clinical_mat[common_samples, ]
+  
+  cor_res <- rcorr(genus_mat, clinical_mat, type = "spearman")
+  
+  # Plot correlation heatmap
+  corrplot(cor_res$r, type = "upper", tl.col = "black", tl.srt = 45, 
+           p.mat = cor_res$P, sig.level = 0.05, insig = "blank",
+           title = "Spearman Correlation: Genus vs Clinical", mar = c(0,0,1,0))
+  dev.copy(pdf, file.path(main_dir, "06_Clinical_Correlation", "Spearman_Correlation_Heatmap.pdf"), width = 10, height = 10)
+  dev.off()
+  dev.copy(png, file.path(main_dir, "06_Clinical_Correlation", "Spearman_Correlation_Heatmap.png"), width = 3000, height = 3000, res = 300)
+  dev.off()
+  
+  # Save correlation results
+  cor_r_df <- as.data.frame(cor_res$r)
+  cor_p_df <- as.data.frame(cor_res$P)
+  write.xlsx(list(`Correlation_r` = cor_r_df, `P_value` = cor_p_df), 
+             file = file.path(main_dir, "06_Clinical_Correlation", "Spearman_Correlation_Results.xlsx"))
+  
+  # 6.2 Environmental Factor Analysis (RDA/CCA)
+  # Use Hellinger transformation for species data
+  genus_hel <- decostand(genus_mat, method = "hellinger")
+  
+  # Perform RDA
+  rda_res <- rda(genus_hel ~ ., data = as.data.frame(clinical_mat))
+  
+  # Plot RDA
+  plot(rda_res, type = "text")
+  dev.copy(pdf, file.path(main_dir, "06_Clinical_Correlation", "RDA_Plot.pdf"), width = 8, height = 8)
+  dev.off()
+  dev.copy(png, file.path(main_dir, "06_Clinical_Correlation", "RDA_Plot.png"), width = 2400, height = 2400, res = 300)
+  dev.off()
+  
+  # Save RDA results
+  rda_summary <- summary(rda_res)
+  write.xlsx(list(`Summary` = capture.output(rda_summary), `Scores` = scores(rda_res)), 
+             file = file.path(main_dir, "06_Clinical_Correlation", "RDA_Results.xlsx"))
+  
+} else {
+  message("Skipping Clinical Correlation Analysis: 'clinical_data.xlsx' not found.")
+}
+
+
+# --- 7. Functional Prediction (PICRUSt2) ---
+# IMPORTANT: This section assumes PICRUSt2 has been run externally and outputs are available.
+picrust_dir <- "picrust2_output"
+if (dir.exists(picrust_dir)) {
+  
+  # Function to analyze PICRUSt2 output
+  analyze_picrust <- function(filename, analysis_name) {
+    filepath <- file.path(picrust_dir, filename)
+    if (!file.exists(filepath)) {
+      message(paste("File not found:", filename, "Skipping", analysis_name))
+      return(NULL)
+    }
+    
+    func_data <- read.delim(filepath, stringsAsFactors = FALSE, check.names = FALSE, row.names = 1)
+    # Ensure sample names match
+    func_data <- func_data[, intersect(colnames(func_data), rownames(sample_data(PS)))]
+    sample_data(PS)$Group <- factor(sample_data(PS)$Group) # ensure factor
+    
+    # Melt for plotting
+    df_melt <- psmelt(phyloseq(otu_table(as.matrix(func_data), taxa_are_rows = TRUE), sample_data(PS)))
+    
+    # Plot top 20 abundant pathways
+    top_pathways <- df_melt %>% group_by(OTU) %>% summarise(mean_ab = mean(Abundance)) %>% top_n(20, mean_ab) %>% pull(OTU)
+    df_top <- df_melt %>% filter(OTU %in% top_pathways)
+    
+    p <- ggplot(df_top, aes(x = Group, y = Abundance, fill = Group)) +
+      geom_boxplot() +
+      facet_wrap(~OTU, scales = "free_y") +
+      theme_bw() +
+      theme(axis.text.x = element_text(angle = 45, hjust = 1))
+    
+    ggsave(filename = file.path(main_dir, "07_Function_Prediction", paste0(analysis_name, "_Top20_Boxplot.pdf")), plot = p, width = 12, height = 10)
+    ggsave(filename = file.path(main_dir, "07_Function_Prediction", paste0(analysis_name, "_Top20_Boxplot.png")), plot = p, width = 12, height = 10, dpi = 300)
+    
+    # Differential analysis using DESeq2
+    diagdds_func <- phyloseq_to_deseq2(phyloseq(otu_table(as.matrix(func_data), taxa_are_rows = TRUE), sample_data(PS)), ~ Group)
+    geo_means_func <- apply(counts(diagdds_func), 1, gm_mean)
+    diagdds_func <- estimateSizeFactors(diagdds_func, geoMeans = geo_means_func)
+    diagdds_func <- DESeq(diagdds_func, test = "Wald", fitType = "local")
+    
+    res_list_func <- list()
+    for (p in pairwise_comb) {
+      contrast <- c("Group", p[1], p[2])
+      res <- results(diagdds_func, contrast = contrast, alpha = 0.05)
+      res <- res[order(res$padj), ]
+      sig_res <- subset(res, padj < 0.05 & abs(log2FoldChange) > 1)
+      if (nrow(sig_res) > 0) {
+        res_list_func[[paste(analysis_name, p[1], "_vs_", p[2], sep = "_")]] <- as.data.frame(sig_res)
+      }
+    }
+    
+    if (length(res_list_func) > 0) {
+      write.xlsx(res_list_func, file = file.path(main_dir, "07_Function_Prediction", paste0(analysis_name, "_DESeq2_Results.xlsx")))
+    }
+  }
+  
+  analyze_picrust("pathabundance.tsv", "Pathways")
+  analyze_picrust("ko_abundance.tsv", "KO")
+  analyze_picrust("cog_abundance.tsv", "COG")
+  analyze_picrust("ec_abundance.tsv", "EC")
+  analyze_picrust("pfam_abundance.tsv", "PFAM")
+  analyze_picrust("tigrfam_abundance.tsv", "TIGRFAM")
+  
+} else {
+  message("Skipping Functional Prediction: 'picrust2_output' directory not found.")
+}
+
+
+# --- 8. Phenotype Prediction ---
+# NOTE: Phenotype prediction (e.g., BugBase) is typically done via web servers.
+# It cannot be directly performed in an R script.
+# Please upload your OTU table to a service like BugBase (https://bugbase.cs.umn.edu/)
+# to get phenotype predictions (e.g., Gram-positive, Gram-negative, Potential Pathogens, etc.).
+# The output from BugBase can then be analyzed similarly to the functional prediction data above.
+message("Phenotype Prediction (e.g., BugBase) requires external web tools and is not included in this script.")
+
+
+# --- End of Script ---
+message("All analyses completed. Results are saved in the 'Microbiome_Analysis_Results' directory.")
+
