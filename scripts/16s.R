@@ -16,7 +16,7 @@ rm(list = ls())
 # Create a list of packages to be installed/loaded
 packages <- c(
   "tidyverse", "openxlsx", "phyloseq", "microbiome", "vegan", "picante",
-  "DESeq2", "randomForest", "pROC", "lem", "VennDiagram", "igraph", "ggraph",
+  "DESeq2", "randomForest", "pROC", "VennDiagram", "igraph", "ggraph",
   "Hmisc", "corrplot", "pheatmap", "ape", "ggtree", "ggpubr", "RColorBrewer"
 )
 
@@ -29,7 +29,7 @@ for (pkg in packages) {
 }
 
 # Bioconductor packages
-bioc_packages <- c("phyloseq", "microbiome", "DESeq2", "lem")
+bioc_packages <- c("phyloseq", "microbiome", "DESeq2")
 for (pkg in bioc_packages) {
   if (!requireNamespace(pkg, quietly = TRUE)) {
     if (!requireNamespace("BiocManager", quietly = TRUE)) {
@@ -51,13 +51,12 @@ sapply(sub_dirs, function(dir) dir.create(file.path(main_dir, dir), showWarnings
 
 # 0.4 Load and prepare data
 # Load OTU table
-otu_data <- read.delim("otu_table.txt", stringsAsFactors = FALSE, check.names = FALSE)
-rownames(otu_data) <- otu_data$SampleID
+otu_data <- read.csv("GROUP2/species.csv", stringsAsFactors = FALSE, check.names = FALSE, row.names = 1);
 otu_data$SampleID <- NULL
-meta_data <- as.data.frame(otu_data$Group)
+meta_data <- as.data.frame(otu_data$class)
 colnames(meta_data) <- "Group"
 rownames(meta_data) <- rownames(otu_data)
-otu_data$Group <- NULL
+otu_data$class <- NULL
 
 # Create OTU matrix for phyloseq
 otu_matrix <- as.matrix(otu_data)
@@ -147,24 +146,49 @@ write.xlsx(otu_lists, file.path(main_dir, "01_Community_Structure", "Venn_OTU_li
 
 # 1.3 Sample-Species Heatmap (Top abundant species)
 ps_rel <- transform_sample_counts(PS, function(x) x / sum(x))
+# Select top N abundant genera (or other level)
 top_taxa <- names(sort(taxa_sums(ps_rel), TRUE))[1:30]
 ps_top <- prune_taxa(top_taxa, ps_rel)
+
+# Prepare data for pheatmap
 df_heatmap <- psmelt(ps_top)
-df_heatmap_cast <- dcast(df_heatmap, Sample ~ Genus, value.var = "Abundance", fill = 0)
+
+# --- 关键修正点 1: 简化数据框以避免 dcast 的问题 ---
+# 只保留构建矩阵必需的列，防止其他分类学信息被 dcast 误用为 id.vars
+df_heatmap_simplified <- df_heatmap[, c("Sample", "Genus", "Abundance")]
+
+# 将长格式数据转换为宽格式矩阵
+df_heatmap_cast <- dcast(df_heatmap_simplified, Sample ~ Genus, value.var = "Abundance", fill = 0)
 rownames(df_heatmap_cast) <- df_heatmap_cast$Sample
 df_heatmap_cast$Sample <- NULL
+
+# --- 关键修正点 2: 确保矩阵是数值型 ---
+# as.matrix 在 data.frame 包含非数值列时会将整个矩阵转为字符型
+# 现在由于 df_heatmap_cast 只包含数值列，可以安全转换
 mat_heatmap <- as.matrix(df_heatmap_cast)
 
+# --- 关键修正点 3: 准备注释数据并修正参数 ---
+# 创建一个干净的注释数据框
+annotation_df <- as.data.frame(sample_data(PS))
+# 确保行名与热图矩阵的行名（样本名）匹配
+rownames(annotation_df) <- sample_names(PS)
+# 只保留分组信息列，防止其他列干扰
+annotation_df <- annotation_df[, "Group", drop = FALSE]
+
+# 绘制热图
+# 注意：因为样本是行，所以应该使用 annotation_row 而不是 annotation_col
 pheatmap(mat_heatmap,
-         annotation_col = as.data.frame(sample_data(PS)),
+         annotation_row = annotation_df,
          show_rownames = FALSE,
          scale = "row",
          clustering_distance_rows = "correlation",
          clustering_method = "complete",
          filename = file.path(main_dir, "01_Community_Structure", "Sample_Species_Heatmap.pdf"),
          width = 10, height = 12)
+
+# PNG版本
 pheatmap(mat_heatmap,
-         annotation_col = as.data.frame(sample_data(PS)),
+         annotation_row = annotation_df,
          show_rownames = FALSE,
          scale = "row",
          clustering_distance_rows = "correlation",
@@ -172,7 +196,9 @@ pheatmap(mat_heatmap,
          filename = file.path(main_dir, "01_Community_Structure", "Sample_Species_Heatmap.png"),
          width = 10, height = 12)
 
-write.xlsx(df_heatmap, file.path(main_dir, "01_Community_Structure", "Heatmap_data.xlsx"))
+# 保存用于绘图的数据
+write.xlsx(df_heatmap, file = file.path(main_dir, "01_Community_Structure", "Heatmap_data.xlsx"))
+
 
 
 # --- 2. Diversity Analysis ---
@@ -220,7 +246,7 @@ plot_ordination_ps <- function(ordination_method, dist_method, title) {
     labs(title = title)
   
   ggsave(file.path(main_dir, "02_Diversity", paste0(ordination_method, "_", dist_method, ".pdf")), plot = p, width = 8, height = 6)
-  ggsave(file.path(main_dir, "02_Diversity", paste0(ordination_method, "_dist_method, ".png")), plot = p, width = 8, height = 6, dpi = 300)
+  ggsave(file.path(main_dir, "02_Diversity", paste0(ordination_method, "_dist_method", ".png")), plot = p, width = 8, height = 6, dpi = 300)
 }
 
 # PCA
