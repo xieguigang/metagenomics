@@ -112,8 +112,16 @@ dist_bc <- phyloseq::distance(physeq_rel, method = "bray")
 ord <- ordinate(physeq_rel, method = "PCoA", distance = dist_bc)
 
 # 提取PCoA坐标
-pcoa_df <- data.frame(sample_data(physeq),
-                      scores(ord, display = "sites"))
+# pcoa_df <- data.frame(sample_data(physeq),
+#                       scores(ord, display = "sites"))
+# 提取PCoA坐标
+# 直接从ordinate结果中提取坐标向量，这比使用scores()函数更稳定
+pcoa_sites <- as.data.frame(ord$vectors)
+# 确保样本名称与元数据匹配
+rownames(pcoa_sites) <- rownames(sample_data(physeq))
+# 合并样本信息和PCoA坐标
+pcoa_df <- cbind(sample_data(physeq), pcoa_sites)
+
 
 # 绘制PCoA图
 p_pcoa <- ggplot(pcoa_df, aes(Axis.1, Axis.2, color = Group)) +
