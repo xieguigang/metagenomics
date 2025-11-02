@@ -140,7 +140,7 @@ ggsave("16S_Results/Plots/PCoA_Bray.pdf", p_pcoa, width = 8, height = 6)
 adonis_res <- adonis2(dist_bc ~ Group, data = as(sample_data(physeq), "data.frame"))
 write.xlsx(as.data.frame(adonis_res), "16S_Results/Tables/PERMANOVA.xlsx")
 
-# 4. 物种组成分析
+# 5. 物种组成分析
 # --------------------
 # 门水平组成
 physeq_phylum <- tax_glom(physeq_rel, "Phylum")
@@ -162,6 +162,7 @@ p_phylum <- ggplot(phylum_df, aes(x = Sample, y = Abundance, fill = Phylum)) +
 ggsave("16S_Results/Plots/Phylum_Composition.png", p_phylum, width = 12, height = 6, dpi = 300)
 ggsave("16S_Results/Plots/Phylum_Composition.pdf", p_phylum, width = 12, height = 6)
 
+# --- 修改开始：属水平热图 ---
 # 属水平热图
 physeq_genus <- tax_glom(physeq_rel, "Genus")
 genus_rel <- transform_sample_counts(physeq_genus, function(x) x / sum(x))
@@ -171,20 +172,41 @@ genus_mat <- otu_table(genus_rel)
 top_genus <- names(sort(colSums(genus_mat), decreasing = TRUE))[1:20]
 genus_mat <- genus_mat[, top_genus]
 
-# 绘制热图
+# 1. 创建用于注释的数据框
+# 确保行名是样本名，与genus_mat的列名匹配
+annotation_df <- data.frame(
+  Group = sample_data(physeq)$Group,
+  row.names = sample_names(physeq)
+)
+# 确保Group是因子类型
+annotation_df$Group <- as.factor(annotation_df$Group)
+
+# 2. 为分组定义颜色
+# 获取唯一的分组名称
+group_levels <- levels(annotation_df$Group)
+# 从RColorBrewer中选择一个调色板，并分配颜色
+# 确保颜色数量大于等于分组数量
+group_colors <- brewer.pal(max(3, length(group_levels)), "Set2")[1:length(group_levels)]
+names(group_colors) <- group_levels # 将颜色名称与分组名称对应
+
+# 3. 绘制热图
 pheatmap(genus_mat,
          cluster_rows = TRUE,
          cluster_cols = TRUE,
-         annotation_col = data.frame(Group = sample_data(physeq)$Group),
+         annotation_col = annotation_df,
+         annotation_colors = list(Group = group_colors), # 关键修改：手动指定颜色
          show_rownames = FALSE,
          fontsize_col = 8,
+         main = "Top 20 Genus Abundance Heatmap", # 添加一个标题是好习惯
          filename = "16S_Results/Plots/Genus_Heatmap.png",
          width = 10,
          height = 8)
+# --- 修改结束 ---
 
-# 5. 差异物种分析
+
+# 6. 差异物种分析
 # --------------------
-# DESeq2差异分析
+# DESeq2差异分析（使用原始计数数据）
 diagdds <- phyloseq_to_deseq2(physeq, ~ Group)
 diagdds <- DESeq(diagdds, test = "Wald", fitType = "parametric")
 
@@ -216,19 +238,13 @@ p_volcano <- ggplot(volcano_df, aes(x = log2FoldChange, y = -log10(padj), color 
 ggsave("16S_Results/Plots/Volcano_DESeq2.png", p_volcano, width = 8, height = 6, dpi = 300)
 ggsave("16S_Results/Plots/Volcano_DESeq2.pdf", p_volcano, width = 8, height = 6)
 
-# 6. 系统发育树（可选）
-# --------------------
-# 如果有系统发育树文件，可添加以下代码：
-# tree <- read_tree("phylogenetic_tree.nwk")
-# physeq_tree <- merge_phyloseq(physeq, tree)
-# plot_tree(physeq_tree, color = "Group", label.tips = "Genus")
-
 # 7. 生成分析报告摘要
 # --------------------
 report <- data.frame(
-  Analysis = c("Sample Count", "OTU Count", "Alpha Diversity (Shannon)", "Beta Diversity (PERMANOVA R2)"),
+  Analysis = c("Sample Count", "OTU Count (Raw)", "OTU Count (Filtered)", "Alpha Diversity (Shannon)", "Beta Diversity (PERMANOVA R2)"),
   Result = c(
     nrow(sample_data),
+    ntaxa(physeq_raw),
     ntaxa(physeq),
     paste(round(mean(alpha_div$Shannon), 2), "±", round(sd(alpha_div$Shannon), 2)),
     paste(round(adonis_res$R2[1], 3), "p =", round(adonis_res$`Pr(>F)`[1], 3))
