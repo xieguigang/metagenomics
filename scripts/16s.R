@@ -16,7 +16,7 @@ packages <- c(
   "tidyverse", "openxlsx", "phyloseq", "microbiome", "vegan", "picante",
   "DESeq2", "randomForest", "pROC", "VennDiagram", "igraph", "ggraph",
   "Hmisc", "corrplot", "pheatmap", "ape", "ggtree", "ggpubr", "RColorBrewer",
-  "reshape2", "microeco", "Tax4Fun2", "CoDaSeq", "factoextra", "ALDEx2"
+  "reshape2", "microeco", "CoDaSeq", "factoextra", "ALDEx2"
 )
 
 # Check and install CRAN packages
@@ -123,7 +123,7 @@ plot_composition <- function(ps, level, top_n = 15) {
   }
   
   # Aggregate at specified taxonomic level
-  ps_glom <- tax_glom(ps, taxrank = level, NA.rm = TRUE)
+  ps_glom <- tax_glom(ps, taxrank = level)
   ps_rel <- transform_sample_counts(ps_glom, function(x) x / sum(x))
   
   # Melt for plotting
@@ -159,15 +159,15 @@ plot_composition <- function(ps, level, top_n = 15) {
   
   # Save plots
   ggsave(filename = file.path(main_dir, "01_Community_Structure", 
-                             paste0("Composition_", level, ".pdf")), 
+                              paste0("Composition_", level, ".pdf")), 
          plot = p, width = 12, height = 8)
   ggsave(filename = file.path(main_dir, "01_Community_Structure", 
-                             paste0("Composition_", level, ".png")), 
+                              paste0("Composition_", level, ".png")), 
          plot = p, width = 12, height = 8, dpi = 300)
   
   # Save data
   write.xlsx(df, file = file.path(main_dir, "01_Community_Structure", 
-                                 paste0("Composition_", level, "_data.xlsx")))
+                                  paste0("Composition_", level, "_data.xlsx")))
   
   return(p)
 }
@@ -271,7 +271,7 @@ generate_heatmap <- function(ps, level = "Genus", top_n = 30) {
            fontsize_row = 8,
            main = paste("Heatmap of Top", top_n, level, "Abundance"),
            filename = file.path(main_dir, "01_Community_Structure", 
-                              paste0("Heatmap_", level, ".pdf")),
+                                paste0("Heatmap_", level, ".pdf")),
            width = 12, height = 10)
   
   # PNG version
@@ -286,13 +286,13 @@ generate_heatmap <- function(ps, level = "Genus", top_n = 30) {
            fontsize_row = 8,
            main = paste("Heatmap of Top", top_n, level, "Abundance"),
            filename = file.path(main_dir, "01_Community_Structure", 
-                              paste0("Heatmap_", level, ".png")),
+                                paste0("Heatmap_", level, ".png")),
            width = 12, height = 10)
   
   # Save data
   write.xlsx(heatmap_data, 
              file = file.path(main_dir, "01_Community_Structure", 
-                            paste0("Heatmap_", level, "_data.xlsx")))
+                              paste0("Heatmap_", level, "_data.xlsx")))
 }
 
 generate_heatmap(PS, "Genus", 30)
@@ -494,7 +494,7 @@ run_aldex2_analysis <- function(ps) {
   
   # Identify significant OTUs
   aldex_results$Significant <- ifelse(aldex_results$we.eBH < 0.05 & abs(aldex_results$effect) > 1, 
-                                     "Yes", "No")
+                                      "Yes", "No")
   
   # Add taxonomy information
   tax_info <- as.data.frame(tax_table(ps))
@@ -538,9 +538,9 @@ enhanced_random_forest <- function(ps, ntree = 1000) {
   # Train random forest model
   set.seed(123)
   rf_model <- randomForest(x = otu_mat, y = group_vec, 
-                          importance = TRUE, 
-                          ntree = ntree,
-                          proximity = TRUE)
+                           importance = TRUE, 
+                           ntree = ntree,
+                           proximity = TRUE)
   
   # Extract importance
   rf_importance <- importance(rf_model)
@@ -608,8 +608,8 @@ analyze_network <- function(ps, cor_method = "spearman", cor_cutoff = 0.6, p_cut
     
     # Create microeco object
     dataset <- microtable$new(sample_table = sample_info_meco, 
-                             otu_table = otu_table_meco, 
-                             tax_table = taxonomy_table_meco)
+                              otu_table = otu_table_meco, 
+                              tax_table = taxonomy_table_meco)
     
     # Calculate correlation network
     t1 <- trans_network$new(
