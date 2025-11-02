@@ -67,6 +67,9 @@ TAX <- tax_table(as.matrix(tax_table))
 SAM <- sample_data(sample_data)
 physeq <- phyloseq(OTU, TAX, SAM)
 
+# 保存原始phyloseq对象用于Alpha多样性分析
+physeq_raw <- physeq
+
 # 过滤低丰度OTU (在至少20%样本中相对丰度>0.01%)
 physeq <- filter_taxa(physeq, function(x) sum(x > 0) > length(x)*0.2, TRUE)
 
