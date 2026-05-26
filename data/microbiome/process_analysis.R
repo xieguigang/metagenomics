@@ -1,6 +1,6 @@
 
 #' 数据分析的主函数
-process_analysis = function(data+, sample_info, output_dir = "./") {
+process_analysis = function(data, sample_info, output_dir = "./") {
     # 读取数据
     # ID<rownames>,sample_info
     sample_info = read.csv(sample_info, row.names = 1, check.names = FALSE);
