@@ -9,3 +9,24 @@ for(pkg in required_packages) {
     library(pkg, character.only = TRUE);
 }
 
+pkg_dir = "G:\\metagenomics\\data\\16s";
+
+import = function(h) {
+    if (tolower(tools::file_ext(h)) == "r") {
+        # is script
+        source(file.path(pkg_dir, h));
+    } else {
+        # is folder
+        for(file in list.files(file.path(pkg_dir,h), pattern = "\\.[rR]$", full.names = TRUE, recursive = FALSE)) {
+            source(file);
+        }
+    }
+}
+
+import("./process_analysis.R");
+import("./export_and_visualize_results.R");
+import("./generate_summary_report.R");
+
+import("./tools/");
+import("./analyze/");
+import("./export/");
