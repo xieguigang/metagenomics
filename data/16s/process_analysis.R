@@ -1,10 +1,10 @@
 
 
-process_analysis = function(data, sample_info, outputdir) {
+process_analysis = function(data, sample_info, output_dir) {
     # 读取数据
     sample_info = read.csv(sample_info, row.names = 1, check.names = FALSE);
     otu_table <- read.csv(data, row.names = 1, check.names = FALSE);
-    dir.create(outputdir, showWarnings = FALSE);
+    dir.create(output_dir, showWarnings = FALSE);
 
     otu_table[,"taxonomy"] = NULL;
     otu_table[,"Tree"] = NULL;
@@ -17,11 +17,6 @@ process_analysis = function(data, sample_info, outputdir) {
     str(sample_info);
     str(otu_table);
 
-    analyze_by_sample_type(otu_table, sample_info, outputdir);
-}
-
-# 针对特定样本类型的分析函数
-analyze_by_sample_type <- function(otu_table, sample_info, output_dir) {
     message("准备数据");
     print(head(sample_info));
     otu_table = cbind(ID = rownames(sample_info), class = sample_info$sample_info, otu_table);
@@ -31,30 +26,6 @@ analyze_by_sample_type <- function(otu_table, sample_info, output_dir) {
     message("数据将要输出到这个文件夹：",output_dir);
     dir.create(output_dir, recursive = TRUE, showWarnings = FALSE);
     write.csv(otu_table, file = file.path(output_dir,"data.csv"), row.names = FALSE);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     # 导出预处理数据
     export_processed_data <- function(results, output_dir) {
