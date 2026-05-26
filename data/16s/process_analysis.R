@@ -27,19 +27,6 @@ process_analysis = function(data, sample_info, output_dir) {
     dir.create(output_dir, recursive = TRUE, showWarnings = FALSE);
     write.csv(otu_table, file = file.path(output_dir,"data.csv"), row.names = FALSE);
 
-    # 导出预处理数据
-    export_processed_data <- function(results, output_dir) {
-        dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
-        processed_data <- results$processed_data
-
-        write.csv(processed_data$sample_info, file.path(output_dir, "sample_info.csv"), row.names = FALSE)
-        write.csv(processed_data$otu_matrix, file.path(output_dir, "raw_otu_matrix.csv"))
-        write.csv(processed_data$rarefied_otu, file.path(output_dir, "rarefied_otu_matrix.csv"))
-        write.csv(processed_data$relative_abu, file.path(output_dir, "relative_abundance_matrix.csv"))
-        write.csv(processed_data$css_otu, file.path(output_dir, "css_normalized_matrix.csv"))
-        write.csv(processed_data$log_otu, file.path(output_dir, "log_transformed_matrix.csv"))
-    }
-
     # 执行分析
     cat("开始执行", sample_type, "样本分析...\n")
     results <- main_analysis(otu_table)
