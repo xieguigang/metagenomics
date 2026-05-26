@@ -1,11 +1,11 @@
 
-
-process_analysis = function(data, sample_info, output_dir) {
+#' 数据分析的主函数
+process_analysis = function(data+, sample_info, output_dir = "./") {
     # 读取数据
+    # ID<rownames>,sample_info
     sample_info = read.csv(sample_info, row.names = 1, check.names = FALSE);
+    # OTU_ID,sample1,sample2,sample3
     otu_table <- read.csv(data, row.names = 1, check.names = FALSE);
-    dir.create(output_dir, showWarnings = FALSE);
-
     otu_table[,"taxonomy"] = NULL;
     otu_table[,"Tree"] = NULL;
     otu_table[,"OTUs"] = NULL;
