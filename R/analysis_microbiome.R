@@ -6,9 +6,11 @@ let analysis_microbiome = function(otu_table, sampleinfo, output_dir) {
     }
 
     native_r(interop, list(
-        otu_table = otu_table, 
-        sampleinfo = sampleinfo, 
-        output_dir = normalizePath(output_dir), 
-        pkg_dir = dirname(bootstrap)
-    ));
+            otu_table = otu_table, 
+            sampleinfo = sampleinfo, 
+            output_dir = normalizePath(output_dir), 
+            pkg_dir = dirname(bootstrap)
+        ), 
+        deps = bootstrap
+    );
 }
